@@ -40,8 +40,22 @@ struct SpecialSymbol {
   //tnode* stairs[255] = {isEmptyTNode()};//To Do в место shared_ptr нужен указатель
 };
 
+struct SpecialSymbolTest {
+  char symbol{'/'};
+  bool end{false};
+  //bool is_activated{false};  
+  uint32_t repeat{0};///число повторений
+  //std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
+  tnode* stairs[255] = {&isEmptyTNode()};//To Do в место shared_ptr нужен указатель
+};
+
 struct StoreSpecial {
   std::array<SpecialSymbol, 3> store;
+  bool isActive{false};
+};
+
+struct StoreSpecialTest {
+  std::array<SpecialSymbolTest, 3> store;
   bool isActive{false};
 };
 
@@ -53,13 +67,23 @@ struct StoreSpecial {
  * @param store_special хранилище Квантификатор
 */
 
+
 struct tnode {
   uint8_t symbol{0};
   bool special{false};
   bool end{false};
   StoreSpecial store_special;
   std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
-  //tnode* stairs[255] = {isEmptyTNode()}; //To Do в место shared_ptr нужен указатель, shared много весить(нужно проверить)
+  //tnode* stairs[255] = {&isEmptyTNode()}; //To Do в место shared_ptr нужен указатель, shared много весить(нужно проверить)
+};
+
+struct tnodeTest {
+  uint8_t symbol{0};
+  bool special{false};
+  bool end{false};
+  StoreSpecialTest store_special;
+  //std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
+  tnode* stairs[255] = {&isEmptyTNode()}; //To Do в место shared_ptr нужен указатель, shared много весить(нужно проверить)
 };
 
 /**
