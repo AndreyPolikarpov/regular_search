@@ -24,8 +24,18 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/googletest
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(find_regual main.cpp tree_regular.cpp)
-add_executable(test_regular test.cpp)
+#//To Do файлы завернуть в set что бы одно и тоже несколько раз не пеатать
+add_executable(find_regual main.cpp 
+              tree_regular.cpp
+              storage_tnode.cpp
+              tree_node.cpp)
+
+add_executable(test_regular test.cpp
+              tree_regular.cpp
+              storage_tnode.cpp
+              tree_node.cpp)
+
+include_directories(${GTEST_INCLUDE_DIRS})
 
 set_target_properties(find_regual test_regular PROPERTIES
     CXX_STANDARD 20
