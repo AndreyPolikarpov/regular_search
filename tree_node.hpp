@@ -7,9 +7,13 @@
 
 namespace fr::tree {
 
-struct tnode;
+static const uint8_t g_count_special_symbol{3};
 
-tnode &isEmptyTNode();
+struct tnode;
+struct SpecialSymbol;
+
+tnode *isEmptyTNode();
+SpecialSymbol *isEmptySpecialSymbol();
 
 /**
  * @brief Квантификатор, например .?*
@@ -29,13 +33,17 @@ struct SpecialSymbol {
 
   SpecialSymbol() {
     for(int i = 0; i < 255; ++i)
-      stairs[i] = &isEmptyTNode();
+      stairs[i] = isEmptyTNode();
   }
 };
 
 struct StoreSpecial {
-  std::array<SpecialSymbol, 3> store;
-  //bool isActive{false};
+  SpecialSymbol *store[g_count_special_symbol];
+  
+  StoreSpecial() {
+    for(int i = 0; i < g_count_special_symbol; ++i)
+      store[i] = isEmptySpecialSymbol();
+  }
 };
 
 /**
@@ -51,11 +59,11 @@ struct tnode {
   bool end{false};
   StoreSpecial store_special;
   //std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
-  tnode* stairs[255] = {&isEmptyTNode()}; //To Do в место shared_ptr нужен указатель, shared много весить(нужно проверить)
+  tnode* stairs[255]{}; //To Do в место shared_ptr нужен указатель, shared много весить(нужно проверить)
 
   tnode() {
     for(int i = 0; i < 255; ++i)
-      stairs[i] = &isEmptyTNode();
+      stairs[i] = isEmptyTNode();
   }
 };
 
