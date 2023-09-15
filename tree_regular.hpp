@@ -34,6 +34,8 @@ private:
   tnode root;  
   bool addRegularElement(tnode *head, std::string::const_iterator &it,
                   const std::string &re);
+  bool addRegularElement(SpecialSymbol *quantifizier, std::string::const_iterator &it,
+                  const std::string &re);
   bool addSpecialSymbol(tnode *head, std::string::const_iterator &it, 
                   const std::string &re);
 public:

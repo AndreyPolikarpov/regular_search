@@ -36,4 +36,9 @@ tnode &StorageTNode::createTNode(uint8_t symbol) {
   return storage_tnode_.back();
 }
 
+void StorageTNode::ClearAllStorage() {
+  storage_regular_.clear();
+  storage_tnode_.clear();  
+}
+
 }

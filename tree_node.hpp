@@ -35,7 +35,7 @@ struct SpecialSymbol {
 
 struct StoreSpecial {
   std::array<SpecialSymbol, 3> store;
-  bool isActive{false};
+  //bool isActive{false};
 };
 
 /**
@@ -45,11 +45,9 @@ struct StoreSpecial {
  * @param end на этой ноде заканчивается регулярное выражение
  * @param store_special хранилище Квантификатор
 */
-
-
 struct tnode {
   uint8_t symbol{0};
-  bool special{false};
+  bool is_active_special{false};
   bool end{false};
   StoreSpecial store_special;
   //std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
@@ -60,8 +58,6 @@ struct tnode {
       stairs[i] = &isEmptyTNode();
   }
 };
-
-
 
 }
 
