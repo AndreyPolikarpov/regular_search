@@ -11,6 +11,8 @@
 
 namespace fr::tree {
 
+using str_c_iter = std::string::const_iterator;
+
 /*
  так же ограничения по типу регулярных выражении:
   1. Одинаковый вид квалификаторов может повторятся сколь угодно раз,
@@ -26,11 +28,11 @@ namespace fr::tree {
 class TreeRegular {
 private:
   tnode root;  
-  bool addRegularElement(tnode *head, std::string::const_iterator &it,
+  bool addRegularElement(tnode *head, str_c_iter &it,
                   const std::string &re);
-  bool addRegularElement(SpecialSymbol *quantifizier, std::string::const_iterator &it,
+  bool addRegularElement(SpecialSymbol *quantifizier, str_c_iter &it,
                   const std::string &re);
-  bool addSpecialSymbol(tnode *head, std::string::const_iterator &it, 
+  bool addSpecialSymbol(tnode *head, str_c_iter &it, 
                   const std::string &re);
 public:
   /**

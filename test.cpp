@@ -62,6 +62,26 @@ TEST(CreateTree, Simpl) {
   EXPECT_TRUE(!fr::tree::StorageSymbol::isStorageTNode().empty()) << "Storage node is empty";
   EXPECT_STREQ("Regr", ReadStorageTNode().c_str());
   EXPECT_STREQ(".", ReadStorageSpecialSymbol().c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+
+  std::string input_string_5{"Reg./?.r"};
+  fr::tree::TreeRegular tr_5;
+  tr_5.addRegularExpresion(input_string_5);
+
+  EXPECT_TRUE(!fr::tree::StorageSymbol::isStorageTNode().empty()) << "Storage node is empty";
+  EXPECT_STREQ("Reg?r", ReadStorageTNode().c_str());
+  EXPECT_STREQ("..", ReadStorageSpecialSymbol().c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+
+  std::string input_string_6{"Reg./r"};
+  fr::tree::TreeRegular tr_6;
+  tr_6.addRegularExpresion(input_string_6);
+
+  EXPECT_TRUE(!fr::tree::StorageSymbol::isStorageTNode().empty()) << "Storage node is empty";
+  EXPECT_STREQ("Reg/r", ReadStorageTNode().c_str());
+  EXPECT_STREQ(".", ReadStorageSpecialSymbol().c_str());
 }
 
 }

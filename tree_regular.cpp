@@ -18,26 +18,50 @@ int8_t isExistSpecialSymbol(tnode *node, uint8_t symbol) {
   return -1;
 }
 
-bool /*TreeRegular::*/isSpecialSymbol(uint8_t symbol) {
-  switch (symbol) {
-    case  static_cast<uint8_t>('.') :
-      return true;
-    case  static_cast<uint8_t>('?') :
-      return true;
-    case  static_cast<uint8_t>('*') :
-      return true;
+bool isSpecialSymbol(uint8_t symbol) {
+    switch (symbol) {
+    case ('.') : {
+       return true;
+    }
+    case ('?') : {
+       return true;
+    }
+    case ('*') :  {
+       return true;
+    }
+    }
+
+   return false;
+ }
+
+/**
+ * @brief Функция для определения экранированных квантификаторов
+ * если после символа / следует квантификатор то переводит shielding на квантификатор
+ * если нужно использовать квантификатор как простой символ перед ним нужно поставить символ / 
+ * 
+ * @param shielding ссылка проверяемый символ
+ * @param re регулярное в виде строки 
+ * @return true за / следует квантификатором, false в противном случае
+ */
+ bool isShieldingSymbol(str_c_iter &shielding, const std::string &re) {
+  if((*shielding == g_shielding_symbol) && ((shielding + 1) != re.end()) && (isSpecialSymbol(*(shielding + 1)))) {
+    shielding += 1;
+    return true;
   }
 
   return false;
-}
+ }
+ 
 
-bool TreeRegular::addRegularElement(tnode *head, std::string::const_iterator &it, const std::string &re) {
+bool TreeRegular::addRegularElement(tnode *head, str_c_iter &it, const std::string &re) {
   if(head == nullptr)
     throw std::invalid_argument("add tnode:: argument head should nod nullptr ");
   
-  if(isSpecialSymbol(*(it))) {
-      addSpecialSymbol(head, it, re);
-      return true;
+  if(!isShieldingSymbol(it, re)) {
+    if(isSpecialSymbol(*(it))) {
+        addSpecialSymbol(head, it, re);
+        return true;
+    }
   }
 
   if(head->stairs[static_cast<uint8_t>(*it)] == isEmptyTNode()) {
@@ -56,14 +80,16 @@ bool TreeRegular::addRegularElement(tnode *head, std::string::const_iterator &it
   return addRegularElement(head, it, re);
 }
 
-bool TreeRegular::addRegularElement(SpecialSymbol *quantifizier, std::string::const_iterator &it, const std::string &re) {
+bool TreeRegular::addRegularElement(SpecialSymbol *quantifizier, str_c_iter &it, const std::string &re) {
   if(quantifizier == nullptr)
     throw std::invalid_argument("add SpecialSymbol:: argument head should nod nullptr ");
+
+  isShieldingSymbol(it, re); 
 
   if(quantifizier->stairs[static_cast<uint8_t>(*it)] == isEmptyTNode()) {
     quantifizier->stairs[static_cast<uint8_t>(*it)] = &StorageSymbol::createTNode(static_cast<uint8_t>(*it));
   } 
-
+    
   tnode *head = quantifizier->stairs[static_cast<uint8_t>(*it)];
 
   if((it+1) == re.end()) {
@@ -79,7 +105,7 @@ bool TreeRegular::addRegularElement(SpecialSymbol *quantifizier, std::string::co
   return false;
 }
 
-bool TreeRegular::addSpecialSymbol(tnode *head, std::string::const_iterator &it, const std::string &re) {
+bool TreeRegular::addSpecialSymbol(tnode *head, str_c_iter &it, const std::string &re) {
   SpecialSymbol *quantifizier{};
   int8_t number = isExistSpecialSymbol(head, static_cast<uint8_t>(*it));
 
