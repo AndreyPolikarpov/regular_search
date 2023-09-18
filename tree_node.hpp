@@ -6,8 +6,10 @@
 #include <memory>
 
 namespace fr::tree {
-
-static const uint8_t g_count_special_symbol{3};
+namespace {
+  const uint8_t g_count_special_symbol{3};
+  const uint8_t g_shielding_symbol{static_cast<uint8_t>('/')};
+}
 
 struct tnode;
 struct SpecialSymbol;

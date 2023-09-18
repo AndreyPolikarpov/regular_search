@@ -11,12 +11,6 @@
 
 namespace fr::tree {
 
-//struct tnode;
-
-
-//to do для * нужно добавить хранилище в котором будет добавляться значения стоящие после * и нужно будет искать
-// и добавить это хранилище в общий поиск для проверки 
-
 /*
  так же ограничения по типу регулярных выражении:
   1. Одинаковый вид квалификаторов может повторятся сколь угодно раз,
@@ -39,7 +33,24 @@ private:
   bool addSpecialSymbol(tnode *head, std::string::const_iterator &it, 
                   const std::string &re);
 public:
- bool addRegularExpresion(const std::string &regular_expresion);
+  /**
+   * @brief добавляет в "дерево" регулярное выражение
+   * To Do нужно добавить экранирующие символ для экранирования квантификатор
+      
+   * @param regular_expresion регулярное выражение в виде строки
+   * @return true //To Do возможно возвращать void 
+   * @return false 
+   */
+  bool addRegularExpresion(const std::string &regular_expresion);
+  /**
+   * @brief поиск в регулярных выражений в области памяти
+   * 
+   * @return true To Do нужно возвращать std::touple{void *memory область памяти где производится поиск,
+                                                    size_t offset где начинается выражение в memory,
+                                                    std::string regular найденное регулярное выражение}
+   * @return false 
+   */
+  bool search();
 };
 }
 
