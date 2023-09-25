@@ -2,6 +2,9 @@
 #define TREE_NODE_H
 
 #include <array>
+#include <cstdint>
+#include <string>
+#include <sys/types.h>
 #include <vector>
 #include <memory>
 
@@ -16,6 +19,8 @@ struct SpecialSymbol;
 
 tnode *isEmptyTNode();
 SpecialSymbol *isEmptySpecialSymbol();
+uint8_t *isEmptyMemory();
+const std::string &isEmptyRegular();
 
 /**
  * @brief Квантификатор, например .?*

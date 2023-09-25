@@ -11,7 +11,6 @@ namespace {
   std::map<void *, std::string> storage_regular_;
   std::vector<tnode> storage_tnode_;
   std::vector<SpecialSymbol> storage_quantifier_;
-  std::string empty_string_;
 }
 
 std::vector<tnode> &StorageSymbol::isStorageTNode() { return storage_tnode_;}
@@ -27,7 +26,7 @@ const std::string &StorageSymbol::getRegular(tnode *node_end) {
     return search->second;
   }
 
-  return empty_string_;
+  return isEmptyRegular();
 }
 
 tnode &StorageSymbol::createTNode(uint8_t symbol) {

@@ -1,11 +1,13 @@
 #ifndef TREE_REGULAR_H
 #define TREE_REGULAR_H
 
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <array>
 #include <string>
 #include <memory>
+#include <tuple>
 
 #include "tree_node.hpp"
 
@@ -30,15 +32,16 @@ private:
   tnode root;  
   bool addRegularElement(tnode *head, str_c_iter &it,
                   const std::string &re);
-  bool addRegularElement(SpecialSymbol *quantifizier, str_c_iter &it,
+  bool addRegularElement(SpecialSymbol *quantifier, str_c_iter &it,
                   const std::string &re);
   bool addSpecialSymbol(tnode *head, str_c_iter &it, 
                   const std::string &re);
+  std::tuple<uint8_t*, tnode*> searchInDepth(tnode *head,
+                              uint8_t *memory_area, uint8_t *memory_area_end);
 public:
   /**
    * @brief добавляет в "дерево" регулярное выражение
-   * To Do нужно добавить экранирующие символ для экранирования квантификатор
-      
+   *    
    * @param regular_expresion регулярное выражение в виде строки
    * @return true //To Do возможно возвращать void 
    * @return false 
@@ -47,12 +50,17 @@ public:
   /**
    * @brief поиск в регулярных выражений в области памяти
    * 
-   * @return true To Do нужно возвращать std::touple{void *memory область памяти где производится поиск,
-                                                    size_t offset где начинается выражение в memory,
-                                                    std::string regular найденное регулярное выражение}
+   * @param memory_area область памяти где производится поиск
+   * @param memory_size размер области памяти где производится поиск
+   * @return tuple<
+      uint8_t* место в памяти где нашлось регулярное выражение, точнее где закончилось //To Do область памяти где производится поиск 
+      size_t где закачивается регулярное выражение в памяти//To Do отступ от начала где начинается регулярное выражение  
+      const std::string& найденное регулярное выражение 
+      > 
    * @return false 
    */
-  bool search();
+  std::tuple<void*, size_t, std::string>
+        search( uint8_t *memory_area, size_t memory_size);
 };
 }
 

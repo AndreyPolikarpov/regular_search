@@ -2,10 +2,16 @@
 #include "storage_tnode.hpp"
 #include "tree_node.hpp"
 
+//#include <cstddef>
+//#include <cstdint>
+//#include <cstdint>
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include <tuple>
 #include <vector>
 
 namespace fr::tree {
@@ -80,17 +86,17 @@ bool TreeRegular::addRegularElement(tnode *head, str_c_iter &it, const std::stri
   return addRegularElement(head, it, re);
 }
 
-bool TreeRegular::addRegularElement(SpecialSymbol *quantifizier, str_c_iter &it, const std::string &re) {
-  if(quantifizier == nullptr)
+bool TreeRegular::addRegularElement(SpecialSymbol *quantifier, str_c_iter &it, const std::string &re) {
+  if(quantifier == nullptr)
     throw std::invalid_argument("add SpecialSymbol:: argument head should nod nullptr ");
 
   isShieldingSymbol(it, re); 
 
-  if(quantifizier->stairs[static_cast<uint8_t>(*it)] == isEmptyTNode()) {
-    quantifizier->stairs[static_cast<uint8_t>(*it)] = &StorageSymbol::createTNode(static_cast<uint8_t>(*it));
+  if(quantifier->stairs[static_cast<uint8_t>(*it)] == isEmptyTNode()) {
+    quantifier->stairs[static_cast<uint8_t>(*it)] = &StorageSymbol::createTNode(static_cast<uint8_t>(*it));
   } 
     
-  tnode *head = quantifizier->stairs[static_cast<uint8_t>(*it)];
+  tnode *head = quantifier->stairs[static_cast<uint8_t>(*it)];
 
   if((it+1) == re.end()) {
     head->end = true;
@@ -106,7 +112,7 @@ bool TreeRegular::addRegularElement(SpecialSymbol *quantifizier, str_c_iter &it,
 }
 
 bool TreeRegular::addSpecialSymbol(tnode *head, str_c_iter &it, const std::string &re) {
-  SpecialSymbol *quantifizier{};
+  SpecialSymbol *quantifier{};
   int8_t number = isExistSpecialSymbol(head, static_cast<uint8_t>(*it));
 
   if(number == -1) {
@@ -114,30 +120,30 @@ bool TreeRegular::addSpecialSymbol(tnode *head, str_c_iter &it, const std::strin
     head->store_special.store[number] = &StorageSymbol::createSpecialSymbol(static_cast<uint8_t>(*it)); 
   }
 
-  quantifizier = head->store_special.store[number];
+  quantifier = head->store_special.store[number];
   
-  if(quantifizier == nullptr)
+  if(quantifier == nullptr)
     throw std::invalid_argument("Таково не может быть, но произошла ересь, сжечь всех!!!");
 
   head->is_active_special = true;
 
-  quantifizier->symbol = *it;
-  while((quantifizier->repeat < re.size()) &&
-         (*(it+(quantifizier->repeat + 1)) == quantifizier->symbol) && 
-         ((it+(quantifizier->repeat + 1)) != re.end()))
+  quantifier->symbol = *it;
+  while((quantifier->repeat < re.size()) &&
+         (*(it+(quantifier->repeat + 1)) == quantifier->symbol) && 
+         ((it+(quantifier->repeat + 1)) != re.end()))
   {
-    ++quantifizier->repeat;
+    ++quantifier->repeat;
   }
 
-  if(((it+(quantifizier->repeat + 1)) == re.end())) {
-    quantifizier->end = true;
-    StorageSymbol::rememberRegular(quantifizier, re);
+  if(((it+(quantifier->repeat + 1)) == re.end())) {
+    quantifier->end = true;
+    StorageSymbol::rememberRegular(quantifier, re);
     return true;
   }
 
-  it += quantifizier->repeat + 1; 
+  it += quantifier->repeat + 1; 
 
-  addRegularElement(quantifizier, it, re);
+  addRegularElement(quantifier, it, re);
 
   return false;
 }
@@ -147,5 +153,45 @@ bool TreeRegular::addRegularExpresion(const std::string &regular_expresion) {
 
   std::string::const_iterator it=regular_expresion.begin();
   return addRegularElement(head, it, regular_expresion);
+}
+
+std::tuple<void*, size_t, std::string> TreeRegular::search(uint8_t *memory_area, size_t memory_size) {
+  for(size_t diving{0}; diving<memory_size; ++diving) {
+    uint8_t symbol = *(memory_area + diving);
+
+    if(root.stairs[symbol] == isEmptyTNode()) {
+      ++diving;
+      continue;
+    }
+
+    uint8_t *memory_found{};
+    tnode *tnode_found{};
+    std::tie(memory_found, tnode_found) 
+            = searchInDepth(root.stairs[symbol], memory_area+diving + 1, memory_area + memory_size);
+    if(tnode_found != isEmptyTNode()) {
+      //To Do подсчитывать в tuple
+      size_t length =  memory_found - (memory_area + diving);
+      //To Do нужно найти/удалить функцию для экранирования не печатных симовлов
+      std::string str = std::string((memory_area + diving), (memory_found + 1));
+      return std::make_tuple(memory_found, 
+                            length, 
+                            str);
+    }
+  }
+
+  return std::make_tuple(isEmptyMemory(), 0, isEmptyRegular());
+}
+
+std::tuple<uint8_t*, tnode*> TreeRegular::searchInDepth(tnode *head, uint8_t *memory_area,
+                                        uint8_t *memory_area_end) {
+  uint8_t symbol = *(memory_area);
+
+  if((memory_area == memory_area_end) || (head->stairs[symbol] == isEmptyTNode()))
+    return std::make_tuple(memory_area, isEmptyTNode());
+  
+  if(head->stairs[symbol]->end)
+    return std::make_tuple(memory_area, head->stairs[symbol]);
+
+  return searchInDepth(head->stairs[symbol], (memory_area + 1),  memory_area_end);
 }
 }
