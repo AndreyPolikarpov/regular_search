@@ -9,6 +9,7 @@ namespace fr::tree {
 
 namespace {
   std::map<void *, std::string> storage_regular_;
+  tnode root_;
   std::vector<tnode> storage_tnode_;
   std::vector<SpecialSymbol> storage_quantifier_;
 }
@@ -49,6 +50,11 @@ void StorageSymbol::ClearAllStorage() {
   storage_regular_.clear();
   storage_tnode_.clear();  
   storage_quantifier_.clear();
+  root_ = *isEmptyTNode();
+}
+
+tnode *StorageSymbol::isRootTree() {
+  return &root_;
 }
 
 }

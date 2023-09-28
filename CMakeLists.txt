@@ -28,12 +28,16 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(find_regual main.cpp 
               tree_regular.cpp
               storage_tnode.cpp
-              tree_node.cpp)
+              tree_node.cpp
+              search_tree.cpp
+              )
 
 add_executable(test_regular test.cpp
               tree_regular.cpp
               storage_tnode.cpp
-              tree_node.cpp)
+              tree_node.cpp
+              search_tree.cpp
+              )
 
 include_directories(${GTEST_INCLUDE_DIRS})
 

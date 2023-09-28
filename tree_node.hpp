@@ -36,12 +36,13 @@ struct SpecialSymbol {
   //bool is_activated{false};  
   uint32_t repeat{0};///число повторений
   //std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
-  tnode* stairs[255]{};//To Do в место shared_ptr нужен указатель
+  //tnode* stairs[255]{};//To Do в место shared_ptr нужен указатель
+  std::array <tnode*, 255> stairs;
 
   SpecialSymbol() {
-    for(int i = 0; i < 255; ++i)
-      stairs[i] = isEmptyTNode();
+    stairs.fill(isEmptyTNode());
   }
+
 };
 
 struct StoreSpecial {
@@ -66,11 +67,11 @@ struct tnode {
   bool end{false};
   StoreSpecial store_special;
   //std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
-  tnode* stairs[255]{}; //To Do в место shared_ptr нужен указатель, shared много весить(нужно проверить)
+  //tnode* stairs[255]{}; //To Do в место shared_ptr нужен указатель, shared много весить(нужно проверить)
+  std::array <tnode*, 255> stairs;
 
   tnode() {
-    for(int i = 0; i < 255; ++i)
-      stairs[i] = isEmptyTNode();
+    stairs.fill(isEmptyTNode());
   }
 };
 

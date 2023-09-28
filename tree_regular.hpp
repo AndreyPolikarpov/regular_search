@@ -7,7 +7,6 @@
 #include <array>
 #include <string>
 #include <memory>
-#include <tuple>
 
 #include "tree_node.hpp"
 
@@ -26,18 +25,17 @@ using str_c_iter = std::string::const_iterator;
 /**
  * @brief "дерево" для регулярных выражений
  * 
+ * происходит лексический анализ и создание дерева из регулярных выражений  
  */
 class TreeRegular {
 private:
-  tnode root;  
+  tnode *root{nullptr};  
   bool addRegularElement(tnode *head, str_c_iter &it,
                   const std::string &re);
   bool addRegularElement(SpecialSymbol *quantifier, str_c_iter &it,
                   const std::string &re);
   bool addSpecialSymbol(tnode *head, str_c_iter &it, 
                   const std::string &re);
-  std::tuple<uint8_t*, tnode*> searchInDepth(tnode *head,
-                              uint8_t *memory_area, uint8_t *memory_area_end);
 public:
   /**
    * @brief добавляет в "дерево" регулярное выражение
@@ -47,20 +45,6 @@ public:
    * @return false 
    */
   bool addRegularExpresion(const std::string &regular_expresion);
-  /**
-   * @brief поиск в регулярных выражений в области памяти
-   * 
-   * @param memory_area область памяти где производится поиск
-   * @param memory_size размер области памяти где производится поиск
-   * @return tuple<
-      uint8_t* место в памяти где нашлось регулярное выражение, точнее где закончилось //To Do область памяти где производится поиск 
-      size_t где закачивается регулярное выражение в памяти//To Do отступ от начала где начинается регулярное выражение  
-      const std::string& найденное регулярное выражение 
-      > 
-   * @return false 
-   */
-  std::tuple<void*, size_t, std::string>
-        search( uint8_t *memory_area, size_t memory_size);
 };
 }
 

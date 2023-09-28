@@ -50,6 +50,8 @@ public:
    */
   static std::vector<SpecialSymbol> &isStorageQuantifier();
 
+  static tnode *isRootTree();
+
   /**
    * @brief Очищение хранилища узлов дерева, ассоциаций адресов памяти и регулярный выражений
    */

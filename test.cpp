@@ -1,6 +1,7 @@
 #include "tree_regular.hpp"
 #include "storage_tnode.hpp"
 #include "tree_node.hpp"
+#include "search_tree.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -99,8 +100,11 @@ TEST(SearchWithoutQuantifier, Simpl) {
   void *memory_test1 = nullptr;
   size_t offset_test1 = 0;
   std::string regular1_test1;
+  fr::tree::Searcher searcher;
 
-  std::tie(memory_test1, offset_test1, regular1_test1) = tr.search(reinterpret_cast<uint8_t*>(regular1.data()), regular1.size());
+  std::tie(memory_test1, offset_test1, regular1_test1) = 
+        searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(regular1.data()), regular1.size());
 
   EXPECT_STREQ(regular1.c_str(), regular1_test1.c_str());
 }
