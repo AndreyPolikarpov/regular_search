@@ -14,6 +14,11 @@ class Searcher{
 private:
   std::tuple<uint8_t*, tnode*> searchInDepth(tnode *head,
         uint8_t *memory_area, uint8_t *memory_area_end);
+
+  bool searchInQuantifier(tnode *head,
+        uint8_t *memory_area, uint8_t *memory_area_end);
+  bool quantifierDot(SpecialSymbol *quantifier,
+        uint8_t *memory_area, uint8_t *memory_area_end);
 public:
   /**
    * @brief поиск в регулярных выражений в области памяти

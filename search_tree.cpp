@@ -1,6 +1,9 @@
 
 #include "search_tree.hpp"
 #include "storage_tnode.hpp"
+#include "tree_node.hpp"
+#include <cstddef>
+#include <cstdint>
 
 
 namespace fr::tree {
@@ -67,6 +70,43 @@ std::tuple<uint8_t*, tnode*> Searcher::searchInDepth(tnode *head, uint8_t *memor
     return std::make_tuple(memory_area, head->stairs[symbol]);
 
   return searchInDepth(head->stairs[symbol], (memory_area + 1),  memory_area_end);
+}
+
+bool Searcher::searchInQuantifier(tnode *head, uint8_t *memory_area,
+                                        uint8_t *memory_area_end) {
+  
+  for(size_t spec_diving=0; spec_diving < head->store_special.store.size(); ++spec_diving) {
+    SpecialSymbol *quantifier = head->store_special.store[spec_diving];
+    if(quantifier->symbol == '.') {
+      return quantifierDot(quantifier, memory_area, memory_area_end);
+    } 
+    /*else if (quantifier->symbol == '?') {
+      return QuantifierQuestion(quantifier, memory_area, memory_area_end);  
+    }
+    else if (quantifier->symbol == '*') {
+      return QuantifierStar(quantifier, memory_area, memory_area_end);  
+    } 
+    */
+
+  }
+
+  return true;
+}
+
+bool Searcher::quantifierDot(SpecialSymbol *quantifier, 
+        uint8_t *memory_area, uint8_t *memory_area_end) {
+  
+  //To Do доделать
+  if(quantifier->repeat > (memory_area_end - memory_area))
+    return false;
+  
+  uint8_t symbol = memory_area[quantifier->repeat];
+
+  if(quantifier->stairs[symbol] == isEmptyTNode())
+    return false;
+  
+  return true;
+
 }
 
 }
