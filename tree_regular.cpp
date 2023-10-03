@@ -128,20 +128,31 @@ bool TreeRegular::addSpecialSymbol(tnode *head, str_c_iter &it, const std::strin
   head->is_active_special = true;
 
   quantifier->symbol = *it;
-  while((quantifier->repeat < re.size()) &&
-         (*(it+(quantifier->repeat + 1)) == quantifier->symbol) && 
-         ((it+(quantifier->repeat + 1)) != re.end()))
+  RepeatSpecial repeat_spec;
+  while((repeat_spec.repeat < re.size()) && 
+         (*(it+(repeat_spec.repeat + 1)) == quantifier->symbol) && 
+         ((it+(repeat_spec.repeat + 1)) != re.end()))
   {
-    ++quantifier->repeat;
+    ++repeat_spec.repeat;
   }
 
-  if(((it+(quantifier->repeat + 1)) == re.end())) {
-    quantifier->end = true;
+  if(((it+(repeat_spec.repeat + 1)) == re.end())) {
+    repeat_spec.end = true;
+    for(size_t i{0}; i<g_size_repeat_special; ++i) {
+      if(quantifier->repeat_store[i].repeat == 0)
+        quantifier->repeat_store[i] = repeat_spec;
+    }
+    
     StorageSymbol::rememberRegular(quantifier, re);
     return true;
   }
 
-  it += quantifier->repeat + 1; 
+  for(size_t i{0}; i<g_size_repeat_special; ++i) {
+      if(quantifier->repeat_store[i].repeat == 0)
+        quantifier->repeat_store[i] = repeat_spec;
+    }
+
+  it += repeat_spec.repeat + 1; 
 
   addRegularElement(quantifier, it, re);
 

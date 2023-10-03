@@ -10,8 +10,9 @@
 
 namespace fr::tree {
 namespace {
-  const uint8_t g_count_special_symbol{3};
-  const uint8_t g_shielding_symbol{static_cast<uint8_t>('/')};
+  constexpr uint8_t g_count_special_symbol{3};
+  constexpr uint8_t g_shielding_symbol{static_cast<uint8_t>('/')};
+  constexpr uint8_t g_size_repeat_special{20};
 }
 
 struct tnode;
@@ -21,6 +22,11 @@ tnode *isEmptyTNode();
 SpecialSymbol *isEmptySpecialSymbol();
 uint8_t *isEmptyMemory();
 const std::string &isEmptyRegular();
+
+struct RepeatSpecial {
+  bool end{false};
+  uint32_t repeat{0}; 
+};
 
 /**
  * @brief Квантификатор, например .?*
@@ -32,12 +38,9 @@ const std::string &isEmptyRegular();
  */
 struct SpecialSymbol {
   char symbol{'/'};
-  bool end{false};
-  //bool is_activated{false};  
-  uint32_t repeat{0};///число повторений
-  //std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
-  //tnode* stairs[255]{};//To Do в место shared_ptr нужен указатель
-  std::array <tnode*, 256> stairs;
+  //количество повторяющихся квантификаторов //To Do нужно уйти от магического числа 20   
+  std::array<RepeatSpecial, g_size_repeat_special> repeat_store;///число повторений
+  std::array <tnode*, 255> stairs;
 
   SpecialSymbol() {
     stairs.fill(isEmptyTNode());
@@ -65,9 +68,7 @@ struct tnode {
   bool is_active_special{false};
   bool end{false};
   StoreSpecial store_special;
-  //std::array<std::shared_ptr<tnode>, 255> stairs = {std::make_shared<tnode>(isEmptyTNode())};
-  //tnode* stairs[255]{}; //To Do в место shared_ptr нужен указатель, shared много весить(нужно проверить)
-  std::array <tnode*, 256> stairs;
+  std::array <tnode*, 255> stairs;
 
   tnode() {
     stairs.fill(isEmptyTNode());

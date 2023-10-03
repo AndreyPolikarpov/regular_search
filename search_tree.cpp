@@ -2,25 +2,40 @@
 #include "search_tree.hpp"
 #include "storage_tnode.hpp"
 #include "tree_node.hpp"
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <string>
+#include <tuple>
 
 
 namespace fr::tree {
 
 std::tuple<void*, size_t, std::string> EmptyTupleTNode() { return std::make_tuple(isEmptyMemory(), 0, isEmptyRegular());}
-std::tuple<void*, size_t, std::string> FindingTupleTNode(void* memory, size_t size, std::string regular) {
-  return std::make_tuple(memory, 
-                  ((size > 0 )? size : 0), //To Do возможно лишняя проверка
-                  regular);
+
+bool Searcher::PreparingAnswer(void* memory, void* memory_end, size_t size,
+              tnode *node_end, SpecialSymbol *spec_end, size_t repeat) {
+  if((answer_tnode == nullptr) && (node_end != nullptr)) answer_tnode = node_end;
+  if((answer_special == nullptr) && (spec_end != nullptr)) answer_special = spec_end;
+  if((answer_memory == nullptr) && (memory != nullptr)) answer_memory = static_cast<uint8_t*>(memory);
+  if((answer_memory_end == nullptr) && (memory_end != nullptr)) answer_memory_end = static_cast<uint8_t*>(memory_end);
+  if((answer_size == 0) && (size != 0)) answer_size = size;
+  if((answer_repeat == 0) && (repeat != 0)) answer_repeat = repeat;
+
+  if(answer_memory && (answer_size > 0))
+    answer_string = std::move(std::string(static_cast<char*>(memory), size));
+  else if(answer_memory && answer_memory_end)
+    answer_string = std::move(std::string(static_cast<char*>(memory), (answer_memory_end - answer_memory + 1)));
+
+  return true;
 }
 
 
-std::tuple<void*, size_t, std::string> Searcher::search(tnode *root,
+bool Searcher::search(tnode *root,
                uint8_t *memory_area, size_t memory_size) {
 
   if((root == nullptr) || (memory_area == nullptr) || (memory_size == 0))
-    return EmptyTupleTNode();
+    return false;
 
   for(size_t diving{0}; diving<memory_size; ++diving) {
     //uint8_t symbol = *(memory_area + diving);
@@ -33,42 +48,43 @@ std::tuple<void*, size_t, std::string> Searcher::search(tnode *root,
 
     if(diving == (memory_size-1)) {//Встали на последний символ
       if(current_tnode->end) {
-        return FindingTupleTNode(memory_area + diving, 
-                               1,
-                               std::string((memory_area + diving), (memory_area + diving + 1)));
+        return PreparingAnswer(memory_area + diving, memory_area + diving + 1, 1, current_tnode);
       } else {
-        return EmptyTupleTNode();
+        return false;
       }
     }
 
-    uint8_t *memory_found{};
-    tnode *tnode_found{};
-    std::tie(memory_found, tnode_found) 
-            = searchInDepth(current_tnode, memory_area+diving + 1, memory_area + memory_size);
-    if(tnode_found != isEmptyTNode()) {
-      //size_t length =  memory_found - (memory_area + diving);
-      //To Do нужно найти функцию для экранирования/удаления не печатных симовлов
-      //std::string str = std::string((memory_area + diving), (memory_found + 1));
-      return FindingTupleTNode(memory_found, 
-                               memory_found - (memory_area + diving),
-                               std::string((memory_area + diving), (memory_found + 1)));
-      
-      }
+    if(searchInDepth(current_tnode, memory_area+diving + 1, memory_area + memory_size))
+      return PreparingAnswer(memory_area+diving);
+    
+    continue;
   }
 
-  return EmptyTupleTNode();
+  return false;
 }
 
-std::tuple<uint8_t*, tnode*> Searcher::searchInDepth(tnode *head, uint8_t *memory_area,
+bool Searcher::searchInDepth(tnode *head, uint8_t *memory_area,
                                         uint8_t *memory_area_end) {
   uint8_t symbol = *(memory_area);
 
   if((memory_area == memory_area_end) || (head->stairs[symbol] == isEmptyTNode()))
-    return std::make_tuple(memory_area, isEmptyTNode());
+    return false;
   
   if(head->stairs[symbol]->end)
-    return std::make_tuple(memory_area, head->stairs[symbol]);
+    return PreparingAnswer(nullptr, memory_area, 0, head->stairs[symbol]);    
 
+  if(head->is_active_special) {
+    return searchInQuantifier(head, memory_area, memory_area_end);
+    /*
+    std::tuple<uint8_t*, tnode*, SpecialSymbol*> finding_in_quantifier;
+    finding_in_quantifier = 
+                searchInQuantifier(head, memory_area, memory_area_end);
+    if((std::get<1>(finding_in_quantifier) != isEmptyTNode()) || (std::get<2>(finding_in_quantifier) != isEmptySpecialSymbol())) {
+      return finding_in_quantifier;
+    }
+    */
+  }
+  
   return searchInDepth(head->stairs[symbol], (memory_area + 1),  memory_area_end);
 }
 
@@ -90,23 +106,29 @@ bool Searcher::searchInQuantifier(tnode *head, uint8_t *memory_area,
 
   }
 
-  return true;
+  return false;
 }
 
 bool Searcher::quantifierDot(SpecialSymbol *quantifier, 
         uint8_t *memory_area, uint8_t *memory_area_end) {
   
-  //To Do доделать
-  if(quantifier->repeat > (memory_area_end - memory_area))
-    return false;
-  
-  uint8_t symbol = memory_area[quantifier->repeat];
+  for(const auto &special : quantifier->repeat_store) {
+    if(special.repeat + 1 < memory_area_end - memory_area)//To Do нужно проверить что бы не уходил за приделы
+      continue;
+    if(special.end)
+      return PreparingAnswer(nullptr, memory_area, 0, nullptr, quantifier, special.repeat + 1);
 
-  if(quantifier->stairs[symbol] == isEmptyTNode())
-    return false;
-  
-  return true;
+    uint8_t symbol = memory_area[special.repeat + 1];
 
+    if((quantifier->stairs[symbol] != isEmptyTNode()) &&
+            searchInDepth(quantifier->stairs[symbol], memory_area + 1, memory_area_end)) {
+      return true;
+    }
+
+    continue;
+  }
+
+  return false;
 }
 
 }

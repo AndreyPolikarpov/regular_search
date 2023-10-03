@@ -1,8 +1,11 @@
 #ifndef SEARCH_TREE_H
 #define SEARCH_TREE_H
 
+#include <cstddef>
+#include <cstdint>
 #include <tuple>
 
+#include "tree_node.hpp"
 #include "tree_regular.hpp"
 
 namespace fr::tree {
@@ -12,13 +15,17 @@ namespace fr::tree {
  */
 class Searcher{
 private:
-  std::tuple<uint8_t*, tnode*> searchInDepth(tnode *head,
+  bool PreparingAnswer(void* memory=nullptr, void* memory_end=nullptr, size_t size = 0, 
+        tnode *node_end = nullptr, SpecialSymbol *spec_end = nullptr, size_t repeat = 0);
+
+  bool searchInDepth(tnode *head,
         uint8_t *memory_area, uint8_t *memory_area_end);
 
   bool searchInQuantifier(tnode *head,
         uint8_t *memory_area, uint8_t *memory_area_end);
   bool quantifierDot(SpecialSymbol *quantifier,
         uint8_t *memory_area, uint8_t *memory_area_end);
+
 public:
   /**
    * @brief поиск в регулярных выражений в области памяти
@@ -33,8 +40,26 @@ public:
       > 
    * @return false 
    */
-  std::tuple<void*, size_t, std::string>
-        search(tnode *root, uint8_t *memory_area, size_t memory_size);
+  bool search(tnode *root, uint8_t *memory_area, size_t memory_size);
+
+    //To Do завернуть все в tuple
+  tnode *answer_tnode{nullptr};
+  SpecialSymbol *answer_special{nullptr};
+  uint8_t *answer_memory{nullptr};
+  uint8_t *answer_memory_end{nullptr};
+  size_t answer_size{0};
+  size_t answer_repeat{0};
+  std::string answer_string{""};
+
+  void ClearAnswer() {
+    answer_tnode = nullptr;
+    answer_special = nullptr;
+    answer_memory = nullptr;
+    answer_memory_end = nullptr;
+    answer_size = 0;
+    answer_repeat = 0;
+    answer_string = "";
+  };
 } ;
 
 }

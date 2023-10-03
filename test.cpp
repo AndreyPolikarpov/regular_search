@@ -89,6 +89,8 @@ TEST(CreateTree, Simpl) {
 }
 
 TEST(SearchWithoutQuantifier, Simpl) {
+  fr::tree::StorageSymbol::ClearAllStorage();
+  
   std::string regular1{"Regular"};
   //std::string regular2{"Reg/.lar"};
   //std::string regular3{"Regular"};
@@ -98,36 +100,31 @@ TEST(SearchWithoutQuantifier, Simpl) {
   //tr.addRegularExpresion(regular2);
   //tr.addRegularExpresion(regular3);
 
-  void *memory_test1 = nullptr;
-  size_t offset_test1 = 0;
-  std::string regular1_test1;
-
-  std::tie(memory_test1, offset_test1, regular1_test1) = 
+  bool answer = 
         searcher.search(fr::tree::StorageSymbol::isRootTree(),
                           reinterpret_cast<uint8_t*>(regular1.data()), regular1.size());
 
-  EXPECT_STREQ(regular1.c_str(), regular1_test1.c_str());
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ(regular1.c_str(), searcher.answer_string.c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
+  searcher.ClearAnswer();
 
   std::string regular2("ABC");
   tr.addRegularExpresion("C");
-
-  void *memory_test2 = nullptr;
-  size_t offset_test2 = 0;
-  std::string regular1_test2;
-
-
-  std::tie(memory_test2, offset_test2, regular1_test2) = 
-        searcher.search(fr::tree::StorageSymbol::isRootTree(),
+  answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
                           reinterpret_cast<uint8_t*>(regular2.data()), regular2.size());
 
-  EXPECT_STREQ("C", regular1_test2.c_str());
-
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ("C", searcher.answer_string.c_str());
+/*Не помню зачем это надо
   std::tie(memory_test2, offset_test2, regular1_test2) = 
         searcher.search(fr::tree::StorageSymbol::isRootTree(),
                           reinterpret_cast<uint8_t*>(regular1.data()), regular1.size());
 
   EXPECT_TRUE(regular1_test2.empty());
+*/
 }
 }
