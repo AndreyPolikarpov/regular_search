@@ -29,6 +29,7 @@ namespace {
   }
 
 TEST(CreateTree, Simpl) {
+  fr::tree::StorageSymbol::ClearAllStorage();
 
   std::string input_string{"Regular"};
   fr::tree::TreeRegular tr;
@@ -90,15 +91,13 @@ TEST(CreateTree, Simpl) {
 
 TEST(SearchWithoutQuantifier, Simpl) {
   fr::tree::StorageSymbol::ClearAllStorage();
-  
-  std::string regular1{"Regular"};
-  //std::string regular2{"Reg/.lar"};
-  //std::string regular3{"Regular"};
+
   fr::tree::TreeRegular tr;
   fr::tree::Searcher searcher;
+
+
+  std::string regular1{"Regular"};
   tr.addRegularExpresion(regular1);
-  //tr.addRegularExpresion(regular2);
-  //tr.addRegularExpresion(regular3);
 
   bool answer = 
         searcher.search(fr::tree::StorageSymbol::isRootTree(),
@@ -112,19 +111,47 @@ TEST(SearchWithoutQuantifier, Simpl) {
   searcher.ClearAnswer();
 
   std::string regular2("ABC");
-  tr.addRegularExpresion("C");
+  tr.addRegularExpresion("A");
   answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
                           reinterpret_cast<uint8_t*>(regular2.data()), regular2.size());
 
   EXPECT_TRUE(answer);
   EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ("A", searcher.answer_string.c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+  searcher.ClearAnswer();
+
+  std::string regular3("ABC");
+  tr.addRegularExpresion("C");
+  answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(regular3.data()), regular3.size());
+
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
   EXPECT_STREQ("C", searcher.answer_string.c_str());
-/*Не помню зачем это надо
-  std::tie(memory_test2, offset_test2, regular1_test2) = 
+}
+
+TEST(SearchQuantifierDot, Simpl) {
+  fr::tree::StorageSymbol::ClearAllStorage();
+
+  fr::tree::TreeRegular tr;
+  fr::tree::Searcher searcher;
+
+
+  std::string regular1{"Regular"};
+  tr.addRegularExpresion("Reg.");
+
+  bool answer = 
         searcher.search(fr::tree::StorageSymbol::isRootTree(),
                           reinterpret_cast<uint8_t*>(regular1.data()), regular1.size());
 
-  EXPECT_TRUE(regular1_test2.empty());
-*/
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ("Regu", searcher.answer_string.c_str());
+  EXPECT_STREQ("Reg", ReadStorageTNode().c_str());
+  EXPECT_STREQ(".", ReadStorageSpecialSymbol().c_str());
+
+
 }
 }

@@ -46,13 +46,9 @@ bool Searcher::search(tnode *root,
       continue;
     }
 
-    if(diving == (memory_size-1)) {//Встали на последний символ
-      if(current_tnode->end) {
-        return PreparingAnswer(memory_area + diving, memory_area + diving + 1, 1, current_tnode);
-      } else {
-        return false;
-      }
-    }
+    if(current_tnode->end) {
+      return PreparingAnswer(memory_area + diving, memory_area + diving + 1, 1, current_tnode);
+    };
 
     if(searchInDepth(current_tnode, memory_area+diving + 1, memory_area + memory_size))
       return PreparingAnswer(memory_area+diving);
@@ -67,14 +63,17 @@ bool Searcher::searchInDepth(tnode *head, uint8_t *memory_area,
                                         uint8_t *memory_area_end) {
   uint8_t symbol = *(memory_area);
 
+  if(head->is_active_special) {
+    return searchInQuantifier(head, memory_area, memory_area_end);
+  }
+
   if((memory_area == memory_area_end) || (head->stairs[symbol] == isEmptyTNode()))
     return false;
   
   if(head->stairs[symbol]->end)
     return PreparingAnswer(nullptr, memory_area, 0, head->stairs[symbol]);    
 
-  if(head->is_active_special) {
-    return searchInQuantifier(head, memory_area, memory_area_end);
+
     /*
     std::tuple<uint8_t*, tnode*, SpecialSymbol*> finding_in_quantifier;
     finding_in_quantifier = 
@@ -83,8 +82,7 @@ bool Searcher::searchInDepth(tnode *head, uint8_t *memory_area,
       return finding_in_quantifier;
     }
     */
-  }
-  
+    
   return searchInDepth(head->stairs[symbol], (memory_area + 1),  memory_area_end);
 }
 
@@ -113,12 +111,13 @@ bool Searcher::quantifierDot(SpecialSymbol *quantifier,
         uint8_t *memory_area, uint8_t *memory_area_end) {
   
   for(const auto &special : quantifier->repeat_store) {
-    if(special.repeat + 1 < memory_area_end - memory_area)//To Do нужно проверить что бы не уходил за приделы
+    if(special.repeat > memory_area_end - memory_area)//To Do нужно проверить что бы не уходил за приделы
       continue;
-    if(special.end)
-      return PreparingAnswer(nullptr, memory_area, 0, nullptr, quantifier, special.repeat + 1);
 
-    uint8_t symbol = memory_area[special.repeat + 1];
+    if(special.end)
+      return PreparingAnswer(nullptr, memory_area, 0, nullptr, quantifier, special.repeat);
+
+    uint8_t symbol = memory_area[special.repeat];
 
     if((quantifier->stairs[symbol] != isEmptyTNode()) &&
             searchInDepth(quantifier->stairs[symbol], memory_area + 1, memory_area_end)) {

@@ -129,18 +129,28 @@ bool TreeRegular::addSpecialSymbol(tnode *head, str_c_iter &it, const std::strin
 
   quantifier->symbol = *it;
   RepeatSpecial repeat_spec;
+  
   while((repeat_spec.repeat < re.size()) && 
          (*(it+(repeat_spec.repeat + 1)) == quantifier->symbol) && 
          ((it+(repeat_spec.repeat + 1)) != re.end()))
   {
     ++repeat_spec.repeat;
-  }
+  }  
 
+  //для случая когда Точка последний символ регулярного выражения  
+  //if((repeat_spec.repeat == 0) && ((it+(repeat_spec.repeat + 1)) == re.end()) )
+  //  ++repeat_spec.repeat;
+  
   if(((it+(repeat_spec.repeat + 1)) == re.end())) {
+    if(repeat_spec.repeat == 0) ++repeat_spec.repeat; //для случая когда Точка последний символ регулярного выражения
+    
     repeat_spec.end = true;
+
     for(size_t i{0}; i<g_size_repeat_special; ++i) {
-      if(quantifier->repeat_store[i].repeat == 0)
+      if(quantifier->repeat_store[i].repeat == 0) {
         quantifier->repeat_store[i] = repeat_spec;
+        break;
+      }
     }
     
     StorageSymbol::rememberRegular(quantifier, re);
