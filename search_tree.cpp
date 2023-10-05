@@ -39,10 +39,14 @@ bool Searcher::search(tnode *root,
 
   for(size_t diving{0}; diving<memory_size; ++diving) {
     //uint8_t symbol = *(memory_area + diving);
+    if(root->is_active_special) {
+      if(searchInQuantifier(root, memory_area + diving, memory_area + memory_size))
+        return PreparingAnswer(memory_area + diving);
+    }
+    
     tnode *current_tnode = root->stairs[*(memory_area + diving)];
 
     if(current_tnode == isEmptyTNode()) {
-      ++diving;
       continue;
     }
 
@@ -111,16 +115,18 @@ bool Searcher::quantifierDot(SpecialSymbol *quantifier,
         uint8_t *memory_area, uint8_t *memory_area_end) {
   
   for(const auto &special : quantifier->repeat_store) {
-    if(special.repeat > memory_area_end - memory_area)//To Do нужно проверить что бы не уходил за приделы
+    if(special.repeat >= (memory_area_end - memory_area))//To Do нужно проверить что бы не уходил за приделы
       continue;
 
     if(special.end)
-      return PreparingAnswer(nullptr, memory_area, 0, nullptr, quantifier, special.repeat);
+      return PreparingAnswer(nullptr, (memory_area + special.repeat - 1), 
+                                0, nullptr, quantifier, special.repeat);
 
     uint8_t symbol = memory_area[special.repeat];
 
     if((quantifier->stairs[symbol] != isEmptyTNode()) &&
-            searchInDepth(quantifier->stairs[symbol], memory_area + 1, memory_area_end)) {
+            searchInDepth(quantifier->stairs[symbol],
+                  memory_area + special.repeat + 1, memory_area_end)) {
       return true;
     }
 
