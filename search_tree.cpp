@@ -54,6 +54,10 @@ bool Searcher::search(tnode *root,
       return PreparingAnswer(memory_area + diving, memory_area + diving + 1, 1, current_tnode);
     };
 
+    if(current_tnode->is_active_special) {
+      return searchInQuantifier(current_tnode, memory_area + diving + 1, memory_area + memory_size);
+    }
+
     if(searchInDepth(current_tnode, memory_area+diving + 1, memory_area + memory_size))
       return PreparingAnswer(memory_area+diving);
     
@@ -65,28 +69,18 @@ bool Searcher::search(tnode *root,
 
 bool Searcher::searchInDepth(tnode *head, uint8_t *memory_area,
                                         uint8_t *memory_area_end) {
-  uint8_t symbol = *(memory_area);
-
-  if(head->is_active_special) {
-    return searchInQuantifier(head, memory_area, memory_area_end);
-  }
+  uint8_t symbol = *(memory_area); 
 
   if((memory_area == memory_area_end) || (head->stairs[symbol] == isEmptyTNode()))
     return false;
-  
+
   if(head->stairs[symbol]->end)
     return PreparingAnswer(nullptr, memory_area, 0, head->stairs[symbol]);    
+  
+  if(head->stairs[symbol]->is_active_special) {
+    return searchInQuantifier(head->stairs[symbol], memory_area, memory_area_end);
+  }
 
-
-    /*
-    std::tuple<uint8_t*, tnode*, SpecialSymbol*> finding_in_quantifier;
-    finding_in_quantifier = 
-                searchInQuantifier(head, memory_area, memory_area_end);
-    if((std::get<1>(finding_in_quantifier) != isEmptyTNode()) || (std::get<2>(finding_in_quantifier) != isEmptySpecialSymbol())) {
-      return finding_in_quantifier;
-    }
-    */
-    
   return searchInDepth(head->stairs[symbol], (memory_area + 1),  memory_area_end);
 }
 
@@ -98,9 +92,10 @@ bool Searcher::searchInQuantifier(tnode *head, uint8_t *memory_area,
     if(quantifier->symbol == '.') {
       return quantifierDot(quantifier, memory_area, memory_area_end);
     } 
-    /*else if (quantifier->symbol == '?') {
-      return QuantifierQuestion(quantifier, memory_area, memory_area_end);  
+    else if (quantifier->symbol == '?') {      
+      return quantifierQuestion(quantifier, memory_area, memory_area_end);  
     }
+    /*
     else if (quantifier->symbol == '*') {
       return QuantifierStar(quantifier, memory_area, memory_area_end);  
     } 
@@ -115,25 +110,62 @@ bool Searcher::quantifierDot(SpecialSymbol *quantifier,
         uint8_t *memory_area, uint8_t *memory_area_end) {
   
   for(const auto &special : quantifier->repeat_store) {
-    if(special.repeat >= (memory_area_end - memory_area))//To Do нужно проверить что бы не уходил за приделы
+    if(special.repeat > (memory_area_end - memory_area))//To Do нужно проверить что бы не уходил за приделы
       continue;
 
     if(special.end)
-      return PreparingAnswer(nullptr, (memory_area + special.repeat - 1), 
+      return PreparingAnswer(nullptr, (memory_area + special.repeat), 
                                 0, nullptr, quantifier, special.repeat);
 
     uint8_t symbol = memory_area[special.repeat];
+
+    if(quantifier->stairs[symbol]->is_active_special) {
+      return searchInQuantifier(quantifier->stairs[symbol], memory_area + special.repeat,
+                                                   memory_area_end);
+    }
 
     if((quantifier->stairs[symbol] != isEmptyTNode()) &&
             searchInDepth(quantifier->stairs[symbol],
                   memory_area + special.repeat + 1, memory_area_end)) {
       return true;
     }
-
-    continue;
   }
 
   return false;
+}
+
+bool Searcher::quantifierQuestion(SpecialSymbol *quantifier, 
+             uint8_t *memory_area, uint8_t *memory_area_end) {
+  for(const auto &special : quantifier->repeat_store) {
+    if(special.end) {
+      return PreparingAnswer(nullptr, memory_area,
+                                0, nullptr, quantifier, special.repeat);
+    }
+
+    if(special.repeat >= (memory_area_end - memory_area))
+      continue;
+
+    uint8_t symbol{0};
+    //для ? нужно проверять как отсутствие ? так и его присутствие
+    for(uint32_t i{0}; special.repeat; ++i){ 
+      symbol = memory_area[0];
+      if((quantifier->stairs[symbol] != isEmptyTNode()) &&
+              searchInDepth(quantifier->stairs[symbol],
+                    memory_area + i, memory_area_end)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+} 
+
+std::string Searcher::AnswerRegularExpresion() {
+  if(answer_tnode) {
+    return fr::tree::StorageSymbol::RegularExpressionMemorized(answer_tnode);
+  }
+
+  return fr::tree::StorageSymbol::RegularExpressionMemorized(answer_special);
 }
 
 }

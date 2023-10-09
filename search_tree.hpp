@@ -25,6 +25,8 @@ private:
         uint8_t *memory_area, uint8_t *memory_area_end);
   bool quantifierDot(SpecialSymbol *quantifier,
         uint8_t *memory_area, uint8_t *memory_area_end);
+  bool quantifierQuestion(SpecialSymbol *quantifier,
+        uint8_t *memory_area, uint8_t *memory_area_end);
 
 public:
   /**
@@ -41,6 +43,14 @@ public:
    * @return false 
    */
   bool search(tnode *root, uint8_t *memory_area, size_t memory_size);
+
+  /**
+   * @brief Выдает регулярное выражение
+   * 
+   * @return std::string найденное регулярное выражение
+   * если не нашло, то пустая "" строка 
+   */
+  std::string AnswerRegularExpresion();
 
     //To Do завернуть все в tuple
   tnode *answer_tnode{nullptr};

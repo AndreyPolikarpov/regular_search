@@ -21,7 +21,7 @@ struct SpecialSymbol;
 tnode *isEmptyTNode();
 SpecialSymbol *isEmptySpecialSymbol();
 uint8_t *isEmptyMemory();
-const std::string &isEmptyRegular();
+std::string &isEmptyRegular();
 
 struct RepeatSpecial {
   bool end{false};

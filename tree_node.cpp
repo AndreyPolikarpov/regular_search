@@ -14,6 +14,6 @@ namespace {
 tnode *isEmptyTNode() {return &g_empty_tnode;};
 SpecialSymbol *isEmptySpecialSymbol() {return &g_empty_quantifier;};
 uint8_t *isEmptyMemory() {return &g_empty_uint8_t;};
-const std::string &isEmptyRegular() {return g_empty_regular;}; 
+std::string &isEmptyRegular() {return g_empty_regular;}; 
 
 }

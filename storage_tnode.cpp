@@ -21,15 +21,6 @@ bool StorageSymbol::rememberRegular(void *node_end, const std::string &regular) 
   return storage_regular_.emplace(std::make_pair(node_end, regular)).second;
 }
 
-const std::string &StorageSymbol::getRegular(tnode *node_end) {
-  auto search = storage_regular_.find(node_end);
-  if(search != storage_regular_.end()) {
-    return search->second;
-  }
-
-  return isEmptyRegular();
-}
-
 tnode &StorageSymbol::createTNode(uint8_t symbol) {
   tnode node;
   node.symbol = symbol;
@@ -57,4 +48,10 @@ tnode *StorageSymbol::isRootTree() {
   return &root_;
 }
 
+std::string &StorageSymbol::RegularExpressionMemorized(void *node_end) {
+  if(storage_regular_.contains(node_end))
+    return storage_regular_.find(node_end)->second;
+
+  return isEmptyRegular();
+}
 }
