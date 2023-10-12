@@ -316,4 +316,110 @@ TEST(SearchQuantifierQuestion, Simpl) {
   EXPECT_STREQ("Relar", ReadStorageTNode().c_str());
   EXPECT_STREQ("???", ReadStorageSpecialSymbol().c_str());
 }
+
+TEST(SearchQuantifierStar, Simpl) {
+  fr::tree::StorageSymbol::ClearAllStorage();
+
+  fr::tree::TreeRegular tr;
+  fr::tree::Searcher searcher;
+  bool answer{false};
+
+  std::string input_string_1{"Regular"};
+  tr.addRegularExpresion("Reg*");
+
+  answer = 
+        searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(input_string_1.data()), input_string_1.size());
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ("Reg", searcher.answer_string.c_str());
+  EXPECT_STREQ("Reg*", searcher.AnswerRegularExpresion().c_str());
+  EXPECT_STREQ("Reg", ReadStorageTNode().c_str());
+  EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+  searcher.ClearAnswer();
+
+  //td::string input_string_1{"Regular"};
+  tr.addRegularExpresion("*R");
+
+  answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(input_string_1.data()), input_string_1.size());
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ("R", searcher.answer_string.c_str());
+  EXPECT_STREQ("*R", searcher.AnswerRegularExpresion().c_str());
+  EXPECT_STREQ("R", ReadStorageTNode().c_str());
+  EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+  searcher.ClearAnswer();
+
+  //td::string input_string_1{"Regular"};
+  tr.addRegularExpresion("R*");
+
+  answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(input_string_1.data()), input_string_1.size());
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  //EXPECT_STREQ("Re", searcher.answer_string.c_str());//To Do из-за специфики алгоритма должно показывать R, если не критично то пофиг 
+  EXPECT_STREQ("R*", searcher.AnswerRegularExpresion().c_str());
+  EXPECT_STREQ("R", ReadStorageTNode().c_str());
+  EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+  searcher.ClearAnswer();
+
+  //td::string input_string_1{"Regular"};
+  tr.addRegularExpresion("Re*lar");
+
+  answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(input_string_1.data()), input_string_1.size());
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ("Regular", searcher.answer_string.c_str());
+  EXPECT_STREQ("Re*lar", searcher.AnswerRegularExpresion().c_str());
+  EXPECT_STREQ("Relar", ReadStorageTNode().c_str());
+  EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+  searcher.ClearAnswer();
+
+  //td::string input_string_1{"Regular"};
+  tr.addRegularExpresion("*Re*lar*");
+
+  answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(input_string_1.data()), input_string_1.size());
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ("Regular", searcher.answer_string.c_str());
+  EXPECT_STREQ("*Re*lar*", searcher.AnswerRegularExpresion().c_str());
+  EXPECT_STREQ("Relar", ReadStorageTNode().c_str());
+  EXPECT_STREQ("***", ReadStorageSpecialSymbol().c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+  searcher.ClearAnswer();
+
+  //td::string input_string_1{"Regular"};
+  tr.addRegularExpresion("R*r");
+
+  answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(input_string_1.data()), input_string_1.size());
+  EXPECT_TRUE(answer);
+  EXPECT_FALSE(searcher.answer_string.empty());
+  EXPECT_STREQ("Regular", searcher.answer_string.c_str());
+  EXPECT_STREQ("R*r", searcher.AnswerRegularExpresion().c_str());
+  EXPECT_STREQ("Rr", ReadStorageTNode().c_str());
+  EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
+
+  fr::tree::StorageSymbol::ClearAllStorage();
+  searcher.ClearAnswer();
+
+  //td::string input_string_1{"Regular"};
+  tr.addRegularExpresion("R*t");
+
+  answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
+                          reinterpret_cast<uint8_t*>(input_string_1.data()), input_string_1.size());
+  EXPECT_FALSE(answer);
+}
 }

@@ -96,12 +96,9 @@ bool Searcher::searchInQuantifier(tnode *head, uint8_t *memory_area,
     else if (quantifier->symbol == '?') {      
       return quantifierQuestion(quantifier, memory_area, memory_area_end);  
     }
-    /*
     else if (quantifier->symbol == '*') {
-      return QuantifierStar(quantifier, memory_area, memory_area_end);  
-    } 
-    */
-
+      return quantifierStar(quantifier, memory_area, memory_area_end);  
+    }
   }
 
   return false;
@@ -150,7 +147,7 @@ bool Searcher::quantifierQuestion(SpecialSymbol *quantifier,
     uint8_t symbol{0};
     size_t size_memory = memory_area_end - memory_area;
     //для ? нужно проверять как отсутствие ? так и его присутствие
-    for(uint32_t i{0}; i<special.repeat || i < size_memory; ++i){ 
+    for(uint32_t i{0}; i<special.repeat || i < size_memory; ++i) { 
       symbol = memory_area[i];
       if((quantifier->stairs[symbol] != isEmptyTNode())) {
         if(quantifier->stairs[symbol]->end) {
@@ -166,6 +163,34 @@ bool Searcher::quantifierQuestion(SpecialSymbol *quantifier,
 
   return false;
 } 
+
+bool Searcher::quantifierStar(SpecialSymbol *quantifier,
+              uint8_t *memory_area, uint8_t *memory_area_end) {
+  for(const auto &special : quantifier->repeat_store) {
+    if(special.repeat == 0)
+      break;
+    
+    if(special.end)
+      return PreparingAnswer(nullptr, memory_area, 0, nullptr, quantifier);
+
+    uint8_t symbol{0};
+    size_t size_memory = memory_area_end - memory_area;
+    for(uint32_t i{0}; i < size_memory; ++i) {
+      symbol = memory_area[i];
+      if((quantifier->stairs[symbol] != isEmptyTNode())) {
+        if(quantifier->stairs[symbol]->end) {
+          return PreparingAnswer(nullptr, (memory_area + i), 
+                                0, quantifier->stairs[symbol], nullptr, i);
+        }
+        if(searchInDepth(quantifier->stairs[symbol], memory_area + i + 1, memory_area_end)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
 
 std::string Searcher::AnswerRegularExpresion() {
   if(answer_tnode) {

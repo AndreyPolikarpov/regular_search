@@ -27,6 +27,9 @@ private:
         uint8_t *memory_area, uint8_t *memory_area_end);
   bool quantifierQuestion(SpecialSymbol *quantifier,
         uint8_t *memory_area, uint8_t *memory_area_end);
+        //To Do нужно подумать как корректно создавать ветку из регулярного выражения, в частности как хранить повторяющиеся *
+  bool quantifierStar(SpecialSymbol *quantifier,
+        uint8_t *memory_area, uint8_t *memory_area_end);
 
 public:
   /**
