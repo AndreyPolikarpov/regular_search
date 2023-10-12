@@ -25,7 +25,8 @@ std::string &isEmptyRegular();
 
 struct RepeatSpecial {
   bool end{false};
-  uint32_t repeat{0}; 
+  uint32_t repeat{0};
+
 };
 
 /**
