@@ -107,7 +107,7 @@ TEST(SearchWithoutQuantifier, Simpl) {
   EXPECT_STREQ(regular1.c_str(), searcher.answer_string.c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   std::string input_string_1("ABC");
   tr.addRegularExpresion("A");
@@ -119,7 +119,7 @@ TEST(SearchWithoutQuantifier, Simpl) {
   EXPECT_STREQ("A", searcher.answer_string.c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   std::string input_string_2("ABC");
   tr.addRegularExpresion("C");
@@ -131,7 +131,7 @@ TEST(SearchWithoutQuantifier, Simpl) {
   EXPECT_STREQ("C", searcher.answer_string.c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   std::string input_string_3("ABCRegularDDD");
   tr.addRegularExpresion("Regular");
@@ -163,7 +163,7 @@ TEST(SearchQuantifierDot, Simpl) {
   EXPECT_STREQ(".", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   std::string input_string{"Regular"};
   tr.addRegularExpresion(".egu.");
@@ -177,7 +177,7 @@ TEST(SearchQuantifierDot, Simpl) {
   EXPECT_STREQ("..", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //std::string input_string{"Regular"};
   tr.addRegularExpresion("..g...");
@@ -191,7 +191,7 @@ TEST(SearchQuantifierDot, Simpl) {
   EXPECT_STREQ("..", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //std::string input_string{"Regular"};
   tr.addRegularExpresion(".....");//5
@@ -210,7 +210,7 @@ TEST(SearchQuantifierDot, Simpl) {
   EXPECT_STREQ(".", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   std::string input_string_test{"R"};
   tr.addRegularExpresion(".");
@@ -226,7 +226,7 @@ TEST(SearchQuantifierDot, Simpl) {
 
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //std::string regular3{"Regular"};
   tr.addRegularExpresion("........");//8
@@ -257,7 +257,7 @@ TEST(SearchQuantifierQuestion, Simpl) {
   EXPECT_STREQ("?", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("?????R");
@@ -272,7 +272,7 @@ TEST(SearchQuantifierQuestion, Simpl) {
   EXPECT_STREQ("?", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("R????????????");
@@ -287,7 +287,7 @@ TEST(SearchQuantifierQuestion, Simpl) {
   EXPECT_STREQ("?", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("Re??lar");
@@ -302,7 +302,7 @@ TEST(SearchQuantifierQuestion, Simpl) {
   EXPECT_STREQ("?", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("???Re????lar???");
@@ -338,7 +338,7 @@ TEST(SearchQuantifierStar, Simpl) {
   EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("*R");
@@ -353,7 +353,7 @@ TEST(SearchQuantifierStar, Simpl) {
   EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("R*");
@@ -368,7 +368,7 @@ TEST(SearchQuantifierStar, Simpl) {
   EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("Re*lar");
@@ -383,7 +383,7 @@ TEST(SearchQuantifierStar, Simpl) {
   EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("*Re*lar*");
@@ -398,7 +398,7 @@ TEST(SearchQuantifierStar, Simpl) {
   EXPECT_STREQ("***", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("R*r");
@@ -413,7 +413,7 @@ TEST(SearchQuantifierStar, Simpl) {
   EXPECT_STREQ("*", ReadStorageSpecialSymbol().c_str());
 
   fr::tree::StorageSymbol::ClearAllStorage();
-  searcher.ClearAnswer();
+  searcher.clearAnswer();
 
   //td::string input_string_1{"Regular"};
   tr.addRegularExpresion("R*t");

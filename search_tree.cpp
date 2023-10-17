@@ -3,9 +3,13 @@
 #include "storage_tnode.hpp"
 #include "tree_node.hpp"
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <netdb.h>
 #include <string>
+#include <thread>
 #include <tuple>
 
 
@@ -31,14 +35,18 @@ bool Searcher::PreparingAnswer(void* memory, void* memory_end, size_t size,
 }
 
 
+
 bool Searcher::search(tnode *root,
                uint8_t *memory_area, size_t memory_size) {
 
-  if((root == nullptr) || (memory_area == nullptr) || (memory_size == 0))
+  if(root == nullptr) 
     return false;
 
   for(size_t diving{0}; diving<memory_size; ++diving) {
-    //uint8_t symbol = *(memory_area + diving);
+    /*To Do
+    uint8_t symbol = *(memory_area + diving);
+    для проверки работы в потоке вывести id потока при старте поиска
+    */
     if(root->is_active_special) {
       if(searchInQuantifier(root, memory_area + diving, memory_area + memory_size))
         return PreparingAnswer(memory_area + diving);
@@ -72,7 +80,8 @@ bool Searcher::searchInDepth(tnode *head, uint8_t *memory_area,
                                         uint8_t *memory_area_end) {
   uint8_t symbol = *(memory_area); 
 
-  if((memory_area == memory_area_end) || (head->stairs[symbol] == isEmptyTNode()))
+  if((memory_area == memory_area_end) || (head->stairs[symbol] == isEmptyTNode()) 
+          || search_stop_.load(std::memory_order_release))
     return false;
 
   if(head->stairs[symbol]->end)
@@ -192,7 +201,7 @@ bool Searcher::quantifierStar(SpecialSymbol *quantifier,
   return false;
 }
 
-std::string Searcher::AnswerRegularExpresion() {
+std::string &Searcher::AnswerRegularExpresion() {
   if(answer_tnode) {
     return fr::tree::StorageSymbol::RegularExpressionMemorized(answer_tnode);
   }
@@ -200,4 +209,79 @@ std::string Searcher::AnswerRegularExpresion() {
   return fr::tree::StorageSymbol::RegularExpressionMemorized(answer_special);
 }
 
+void Searcher::startSearch(uint8_t *memory, size_t *size) {
+  for(;;) {
+    if((memory != nullptr) && (size != 0) && 
+          !search_stop_.load(std::memory_order_acquire)) {
+      if(search(fr::tree::StorageSymbol::isRootTree(), memory, *size)) {
+        search_answer_.store(true, std::memory_order_release);  
+        search_stop_.store(true, std::memory_order_release);
+      }     
+    }
+  }
+
+  return;
+}
+
+ThreadPool::ThreadPool(){
+  if(std::thread::hardware_concurrency() != 0) {
+    count_thread_ = std::thread::hardware_concurrency();
+  }
+
+  for(size_t i{0}; i<count_thread_; ++i) {
+    searcher_pool_.push_back(new Searcher);
+    Searcher *searcher = searcher_pool_.back();
+    thread_pool_.emplace_back([searcher, this](){
+      //this->searcher_pool_[i]->startSearch(this->memory_area_, this->memory_size_);
+      searcher->startSearch(this->memory_area_, this->memory_size_);
+    });
+  }
+}
+
+ThreadPool::~ThreadPool() {
+  for(auto searcher : searcher_pool_) {
+    searcher->clearAnswer();
+    searcher->stopSearch(false);
+  }
+  search_works_ = false;
+  for(auto &thread : thread_pool_) {
+    thread.join();
+  }
+}
+
+std::tuple<void*, size_t, std::string> ThreadPool::start_search(void *memory, size_t size) {
+  if(memory == nullptr || size == 0) 
+    return std::make_tuple(nullptr, 0, isEmptyRegular());
+  
+  memory_area_ = static_cast<uint8_t*>(memory); memory_size_ = &size; 
+  
+  for(const auto &searcher : searcher_pool_) {
+    searcher->clearAnswer();
+    searcher->stopSearch(false);
+  }
+  search_works_ = true;
+  size_t index{0};
+  for (;;) {
+    if(index == count_thread_) index = 0;
+    if(searcher_pool_[index]->isResponse())
+      break;
+
+    ++index;
+  }
+
+  for(const auto &searcher : searcher_pool_) {
+    searcher->clearFlag();
+  }
+
+  search_works_ = false;
+  return std::make_tuple(memory,
+    searcher_pool_[index]->answer_size,   searcher_pool_[index]->AnswerRegularExpresion());
+}
+
+bool ThreadPool::addRegularExpression(const std::string &regular) {
+  if(!search_works_)
+    return tree_.addRegularExpresion(regular);
+
+  return false;
+}
 }
