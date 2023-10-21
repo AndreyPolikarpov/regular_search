@@ -35,12 +35,26 @@ private:
   bool quantifierStar(SpecialSymbol *quantifier,
         uint8_t *memory_area, uint8_t *memory_area_end);
 
-  
-  std::atomic<bool> search_answer_{}; ///для вывода результата поиска в другой поток 
-  std::atomic<bool> search_stop_{}; ///принудительная остановка поиска
+  uint8_t *memory_{nullptr};
+  size_t size_{0};
 
+  /**
+   * @brief флаг сигнализирует о результате поиска
+   * @return true поиск успешен
+   * @return false поиск не успешен
+   */
+  std::atomic<bool> search_answer_{}; ///для вывода результата поиска в другой поток 
+  /**
+   * @brief флаг управлением запуска старта
+   * 
+   * @return true запустить поиск или поиск запущен
+   * @return false остановить поиск или поиск остановлен
+   */
+  std::atomic<bool> search_start_{}; ///принудительная остановка поиска
+  std::atomic<bool> stop_job_{};///остановить поток
+  bool exit{false};
 public:
-  Searcher() : search_answer_(false), search_stop_(true){};
+  Searcher() : search_answer_(false), search_start_(false), stop_job_(false){};
   ~Searcher() = default;
   //Searcher(const Searcher &) = delete;
   //Searcher(Searcher &&) = delete;
@@ -62,13 +76,24 @@ public:
    */
   bool search(tnode *root, uint8_t *memory_area, size_t memory_size);  
 
-  void startSearch(uint8_t *memory, size_t *size);
+  void searchLocation(uint8_t *memory, size_t *size);
   bool isResponse() { return search_answer_.load(std::memory_order_release);}
-  void stopSearch(bool stop) {search_stop_.store(stop, std::memory_order_release);};
+  bool isSearchContinues() {return search_start_.load(std::memory_order_release);}
+  void startSearch(bool start) {search_start_.store(start, std::memory_order_release);};
   void clearFlag() {
-    search_stop_.store(true, std::memory_order_release); 
+    //последовательность важна иначе поток выйдет из бесконечного цикла
+    search_start_.store(false, std::memory_order_release); 
     search_answer_.store(false, std::memory_order_release);
-  }
+  };
+
+  void readLocation(uint8_t *memory, size_t size) {
+    if(!isSearchContinues()) {
+      memory_ = memory;
+      size_ = size;
+    }
+  };
+
+  void stopJob();
 
   /**
    * @brief Выдает регулярное выражение
@@ -98,7 +123,7 @@ public:
   };
 } ;
 //To Do возможно переназвать по другому
-class ThreadPool {
+class TreeSearchEngine {
 private:
   size_t count_thread_{4};
   std::vector<std::thread> thread_pool_;
@@ -109,13 +134,16 @@ private:
   bool search_works_ {false};
   TreeRegular tree_;
 
-  //bool initialization();
 public:
-  ThreadPool();
-  ~ThreadPool();
+  TreeSearchEngine();
+  ~TreeSearchEngine();
   bool addRegularExpression(const std::string &regular);
+  void stopSearch(bool stop);
 
   std::tuple<void*, size_t, std::string> start_search(void *memory, size_t size);
+
+  void clearSearch();
+  void stopJobs();
 };
 
 }

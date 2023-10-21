@@ -26,10 +26,10 @@ bool Searcher::PreparingAnswer(void* memory, void* memory_end, size_t size,
   if((answer_size == 0) && (size != 0)) answer_size = size;
   if((answer_repeat == 0) && (repeat != 0)) answer_repeat = repeat;
 
-  if(answer_memory && (answer_size > 0))
-    answer_string = std::move(std::string(static_cast<char*>(memory), size));
-  else if(answer_memory && answer_memory_end)
-    answer_string = std::move(std::string(static_cast<char*>(memory), (answer_memory_end - answer_memory + 1)));
+  if(answer_memory && (answer_size > 0)  && memory)
+    answer_string = (std::string(static_cast<char*>(memory), size));
+  else if(answer_memory && answer_memory_end && memory)
+    answer_string = (std::string(static_cast<char*>(memory), (answer_memory_end - answer_memory + 1)));
 
   return true;
 }
@@ -43,10 +43,6 @@ bool Searcher::search(tnode *root,
     return false;
 
   for(size_t diving{0}; diving<memory_size; ++diving) {
-    /*To Do
-    uint8_t symbol = *(memory_area + diving);
-    для проверки работы в потоке вывести id потока при старте поиска
-    */
     if(root->is_active_special) {
       if(searchInQuantifier(root, memory_area + diving, memory_area + memory_size))
         return PreparingAnswer(memory_area + diving);
@@ -81,7 +77,7 @@ bool Searcher::searchInDepth(tnode *head, uint8_t *memory_area,
   uint8_t symbol = *(memory_area); 
 
   if((memory_area == memory_area_end) || (head->stairs[symbol] == isEmptyTNode()) 
-          || search_stop_.load(std::memory_order_release))
+          || !search_start_.load(std::memory_order_release))
     return false;
 
   if(head->stairs[symbol]->end)
@@ -209,21 +205,31 @@ std::string &Searcher::AnswerRegularExpresion() {
   return fr::tree::StorageSymbol::RegularExpressionMemorized(answer_special);
 }
 
-void Searcher::startSearch(uint8_t *memory, size_t *size) {
+void Searcher::searchLocation(uint8_t *memory, size_t *size) {
   for(;;) {
-    if((memory != nullptr) && (size != 0) && 
-          !search_stop_.load(std::memory_order_acquire)) {
-      if(search(fr::tree::StorageSymbol::isRootTree(), memory, *size)) {
+    if(search_start_.load(std::memory_order_acquire)) {
+      if(search(fr::tree::StorageSymbol::isRootTree(), memory_, size_)) {
         search_answer_.store(true, std::memory_order_release);  
-        search_stop_.store(true, std::memory_order_release);
-      }     
+        search_start_.store(true, std::memory_order_release);
+      } else {
+        search_start_.store(false, std::memory_order_release);
+      }
     }
+    if(stop_job_.load(std::memory_order_acquire))
+          break;
+      
   }
 
   return;
 }
 
-ThreadPool::ThreadPool(){
+void Searcher::stopJob() {
+    search_start_.store(false, std::memory_order_release); 
+    search_answer_.store(false, std::memory_order_release);
+    stop_job_.store(true, std::memory_order_release);
+}
+
+TreeSearchEngine::TreeSearchEngine(){
   if(std::thread::hardware_concurrency() != 0) {
     count_thread_ = std::thread::hardware_concurrency();
   }
@@ -231,57 +237,94 @@ ThreadPool::ThreadPool(){
   for(size_t i{0}; i<count_thread_; ++i) {
     searcher_pool_.push_back(new Searcher);
     Searcher *searcher = searcher_pool_.back();
+    /*
     thread_pool_.emplace_back([searcher, this](){
       //this->searcher_pool_[i]->startSearch(this->memory_area_, this->memory_size_);
-      searcher->startSearch(this->memory_area_, this->memory_size_);
+      searcher->searchLocation(this->memory_area_, this->memory_size_);
     });
+    */
+    
+    thread_pool_.emplace_back(&Searcher::searchLocation, &(*searcher), 
+       this->memory_area_,  this->memory_size_);
+      //this->searcher_pool_[i]->startSearch(this->memory_area_, this->memory_size_);
+      //searcher->searchLocation(this->memory_area_, this->memory_size_);
+    //});
   }
 }
 
-ThreadPool::~ThreadPool() {
+TreeSearchEngine::~TreeSearchEngine() {
   for(auto searcher : searcher_pool_) {
-    searcher->clearAnswer();
-    searcher->stopSearch(false);
+    searcher->stopJob();
   }
-  search_works_ = false;
   for(auto &thread : thread_pool_) {
     thread.join();
   }
 }
 
-std::tuple<void*, size_t, std::string> ThreadPool::start_search(void *memory, size_t size) {
+std::tuple<void*, size_t, std::string> TreeSearchEngine::start_search(void *memory, size_t size) {
   if(memory == nullptr || size == 0) 
     return std::make_tuple(nullptr, 0, isEmptyRegular());
   
   memory_area_ = static_cast<uint8_t*>(memory); memory_size_ = &size; 
   
   for(const auto &searcher : searcher_pool_) {
+    searcher->readLocation((uint8_t*)memory, size);
     searcher->clearAnswer();
-    searcher->stopSearch(false);
+    searcher->startSearch(true);
   }
+
   search_works_ = true;
   size_t index{0};
-  for (;;) {
-    if(index == count_thread_) index = 0;
-    if(searcher_pool_[index]->isResponse())
-      break;
+  size_t not_found{0};
+  bool exit{false};
+  while(!exit) {
+    for(size_t i{0}; i<count_thread_; ++i) {
+      if(searcher_pool_[index]->isResponse() || !search_works_)
+        exit = true;
+      if(!searcher_pool_[index]->isSearchContinues()) 
+        ++not_found;
+    }
 
-    ++index;
+    if(not_found == count_thread_) exit = true;    
   }
 
-  for(const auto &searcher : searcher_pool_) {
-    searcher->clearFlag();
+  if(search_works_) {
+    for(const auto &searcher : searcher_pool_) {
+      searcher->clearFlag();
+    }
   }
 
   search_works_ = false;
+  if(not_found == count_thread_)
+    return std::make_tuple(nullptr, 0, isEmptyRegular());
+
   return std::make_tuple(memory,
     searcher_pool_[index]->answer_size,   searcher_pool_[index]->AnswerRegularExpresion());
 }
 
-bool ThreadPool::addRegularExpression(const std::string &regular) {
+bool TreeSearchEngine::addRegularExpression(const std::string &regular) {
   if(!search_works_)
     return tree_.addRegularExpresion(regular);
 
   return false;
+}
+
+void TreeSearchEngine::stopSearch(bool stop) {
+  search_works_ = !stop;
+}
+
+void TreeSearchEngine::clearSearch() {
+  for(auto searcher : searcher_pool_) {
+    searcher->clearFlag();
+    searcher->clearAnswer();
+  }
+  search_works_ = false;
+}
+
+void TreeSearchEngine::stopJobs() {
+  for(auto searcher : searcher_pool_) {
+    searcher->stopJob();
+  }
+  search_works_ = false;
 }
 }

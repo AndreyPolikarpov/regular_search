@@ -5,8 +5,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <string>
 #include <tuple>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 #include "gtest/gtest.h"
 
@@ -94,6 +97,7 @@ TEST(SearchWithoutQuantifier, Simpl) {
 
   fr::tree::TreeRegular tr;
   fr::tree::Searcher searcher;
+  searcher.startSearch(true);
 
   std::string regular1{"Regular"};
   tr.addRegularExpresion(regular1);
@@ -141,6 +145,8 @@ TEST(SearchWithoutQuantifier, Simpl) {
   EXPECT_TRUE(answer);
   EXPECT_FALSE(searcher.answer_string.empty());
   EXPECT_STREQ("Regular", searcher.answer_string.c_str());
+
+  searcher.clearFlag();
 }
 
 TEST(SearchQuantifierDot, Simpl) {
@@ -148,6 +154,7 @@ TEST(SearchQuantifierDot, Simpl) {
 
   fr::tree::TreeRegular tr;
   fr::tree::Searcher searcher;
+  searcher.startSearch(true);
   bool answer{false};
 
   std::string input_string_1{"Regular"};
@@ -234,6 +241,8 @@ TEST(SearchQuantifierDot, Simpl) {
   answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
                           reinterpret_cast<uint8_t*>(input_string.data()), input_string.size());
   EXPECT_FALSE(answer);
+
+  searcher.clearFlag();
 }
 
 TEST(SearchQuantifierQuestion, Simpl) {
@@ -241,6 +250,7 @@ TEST(SearchQuantifierQuestion, Simpl) {
 
   fr::tree::TreeRegular tr;
   fr::tree::Searcher searcher;
+  searcher.startSearch(true);
   bool answer{false};
 
   std::string input_string_1{"Regular"};
@@ -315,6 +325,8 @@ TEST(SearchQuantifierQuestion, Simpl) {
   EXPECT_STREQ("???Re????lar???", searcher.AnswerRegularExpresion().c_str());
   EXPECT_STREQ("Relar", ReadStorageTNode().c_str());
   EXPECT_STREQ("???", ReadStorageSpecialSymbol().c_str());
+
+  searcher.clearFlag();
 }
 
 TEST(SearchQuantifierStar, Simpl) {
@@ -322,6 +334,7 @@ TEST(SearchQuantifierStar, Simpl) {
 
   fr::tree::TreeRegular tr;
   fr::tree::Searcher searcher;
+  searcher.startSearch(true);
   bool answer{false};
 
   std::string input_string_1{"Regular"};
@@ -421,5 +434,39 @@ TEST(SearchQuantifierStar, Simpl) {
   answer = searcher.search(fr::tree::StorageSymbol::isRootTree(),
                           reinterpret_cast<uint8_t*>(input_string_1.data()), input_string_1.size());
   EXPECT_FALSE(answer);
+
+  searcher.clearFlag();
 }
+
+TEST(TreeSearchEngine, Simpl) {
+  std::string poem;
+  std::string line;
+  std::ifstream in("poems/ASPushkin.txt");
+  if (in.is_open()) {
+      while (std::getline(in, line)) {
+        poem += line;
+      }
+  }
+  in.close();     // закрываем файл
+
+  EXPECT_FALSE(poem.empty());
+  fr::tree::TreeSearchEngine tse;
+
+  tse.addRegularExpression("Пушкин");
+  const auto found = tse.start_search(poem.data(), poem.size());
+
+  EXPECT_TRUE(std::get<0>(found) !=nullptr);
+  EXPECT_STREQ("Пушкин", std::get<2>(found).c_str());
+
+  tse.clearSearch();
+
+  tse.addRegularExpression("Свернуть*Пушкин");
+  const auto found1 = tse.start_search(poem.data(), poem.size());
+
+  EXPECT_TRUE(std::get<0>(found1) !=nullptr);
+  EXPECT_STREQ("Свернуть*Пушкин", std::get<2>(found1).c_str());
+
+  tse.stopJobs();
+}
+
 }
