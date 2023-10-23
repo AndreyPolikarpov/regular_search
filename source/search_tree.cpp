@@ -1,7 +1,9 @@
-
 #include "search_tree.hpp"
 #include "storage_tnode.hpp"
 #include "tree_node.hpp"
+
+#include "version.h"
+
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
@@ -11,6 +13,10 @@
 #include <string>
 #include <thread>
 #include <tuple>
+
+int version() {
+  return PROJECT_VERSION_PATCH;
+}
 
 
 namespace fr::tree {

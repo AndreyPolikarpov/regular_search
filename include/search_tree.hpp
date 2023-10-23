@@ -12,6 +12,8 @@
 #include "tree_node.hpp"
 #include "tree_regular.hpp"
 
+int version();
+
 namespace fr::tree {
 /**
  * @brief Поиск по "дереву" регулярных выражений

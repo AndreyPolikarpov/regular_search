@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "tree_regular.hpp"
+#include "include/tree_regular.hpp"
 
 using namespace fr::tree;
 
