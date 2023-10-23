@@ -29,7 +29,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/source/tree_regular.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/source/storage_tnode.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/source/tree_node.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/source/search_tree.cpp
-#${CMAKE_CURRENT_SOURCE_DIR}/source/test.cpp
       )
 
 set(INCLUDE_REGULAR  #main.cpp 
@@ -41,9 +40,10 @@ set(INCLUDE_REGULAR  #main.cpp
 
 add_executable(find_regual_cli main.cpp)
 add_library(find_regual SHARED ${SOURS_REGULAR} ${INCLUDE_REGULAR})
-#add_executable(test_regular ${SOURS_REGULAR} ${INCLUDE_REGULAR})
+add_executable(test_regular ${CMAKE_CURRENT_SOURCE_DIR}/source/test.cpp 
+              )
 
-set_target_properties(find_regual find_regual_cli   PROPERTIES #test_regular
+set_target_properties(find_regual find_regual_cli  test_regular  PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON) 
 
@@ -53,14 +53,15 @@ target_include_directories(find_regual
 target_include_directories(find_regual 
     PRIVATE include source)
 
-#target_include_directories(test_regular 
-#    PRIVATE ${INCLUDE_REGULAR} ${SOURS_REGULAR})
+target_include_directories(test_regular 
+    PRIVATE include source)
 
-#set_target_properties(test_regular PROPERTIES
-#    INCLUDE_DIRECTORIES "${gtest_SOURCE_DIR}")
+set_target_properties(test_regular PROPERTIES
+    INCLUDE_DIRECTORIES "${gtest_SOURCE_DIR}" 
+    INCLUDE_DIRECTORIES  ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(find_regual_cli PRIVATE find_regual)
-#target_link_libraries(test_regular ${gtest_LIBRARIES} find_regual gtest gtest_main)
+target_link_libraries(test_regular ${gtest_LIBRARIES} find_regual gtest gtest_main)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/googletest
                  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
@@ -69,10 +70,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/googletest
 target_compile_options(find_regual_cli PRIVATE
     -Wall -Wextra -pedantic -Werror  -Wno-unused-parameter) 
 target_compile_options(find_regual PRIVATE
--Wall -Wextra -pedantic -Werror  -Wno-unused-parameter)
-#target_compile_options(test_regular PRIVATE
-#-Wall -Wextra -pedantic -Werror  -Wno-unused-parameter)
-
-
+    -Wall -Wextra -pedantic -Werror  -Wno-unused-parameter)
+target_compile_options(test_regular PRIVATE
+    -Wall -Wextra -pedantic -Werror  -Wno-unused-parameter)
 
 set_target_properties(find_regual PROPERTIES PUBLIC_HEADER search_tree.hpp)
