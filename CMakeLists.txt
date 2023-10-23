@@ -36,6 +36,7 @@ set(INCLUDE_REGULAR  #main.cpp
       ${CMAKE_CURRENT_SOURCE_DIR}/include/storage_tnode.hpp
       ${CMAKE_CURRENT_SOURCE_DIR}/include/tree_node.hpp
       ${CMAKE_CURRENT_SOURCE_DIR}/include/search_tree.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/tree_search_engine.hpp
 )
 
 add_executable(find_regual_cli main.cpp)
@@ -52,13 +53,18 @@ target_include_directories(find_regual
 
 target_include_directories(find_regual 
     PRIVATE include source)
+  
+
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER tree_search_engine.hpp)
 
 target_include_directories(test_regular 
     PRIVATE include source)
 
 set_target_properties(test_regular PROPERTIES
     INCLUDE_DIRECTORIES "${gtest_SOURCE_DIR}" 
-    INCLUDE_DIRECTORIES  ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    INCLUDE_DIRECTORIES  ${CMAKE_CURRENT_SOURCE_DIR}/include
+    INCLUDE_DIRECTORIES  ${CMAKE_CURRENT_SOURCE_DIR}
+    )
 
 target_link_libraries(find_regual_cli PRIVATE find_regual)
 target_link_libraries(test_regular ${gtest_LIBRARIES} find_regual gtest gtest_main)
@@ -74,4 +80,18 @@ target_compile_options(find_regual PRIVATE
 target_compile_options(test_regular PRIVATE
     -Wall -Wextra -pedantic -Werror  -Wno-unused-parameter)
 
-set_target_properties(find_regual PROPERTIES PUBLIC_HEADER search_tree.hpp)
+install(TARGETS find_regual_cli RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(CPACK_GENERATOR DEB)
+
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
+
+set(CPACK_PACKAGE_CONTACT examle@example.com)
+
+include(CPack)
+
+enable_testing()
+
+add_test(test_regular test_regular)

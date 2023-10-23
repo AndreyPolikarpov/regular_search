@@ -124,29 +124,6 @@ public:
     answer_string = "";
   };
 } ;
-//To Do возможно переназвать по другому
-class TreeSearchEngine {
-private:
-  size_t count_thread_{4};
-  std::vector<std::thread> thread_pool_;
-  std::vector<Searcher*> searcher_pool_;
-  uint8_t *memory_area_{nullptr};
-  size_t *memory_size_{nullptr};
-
-  bool search_works_ {false};
-  TreeRegular tree_;
-
-public:
-  TreeSearchEngine();
-  ~TreeSearchEngine();
-  bool addRegularExpression(const std::string &regular);
-  void stopSearch(bool stop);
-
-  std::tuple<void*, size_t, std::string> start_search(void *memory, size_t size);
-
-  void clearSearch();
-  void stopJobs();
-};
 
 }
 

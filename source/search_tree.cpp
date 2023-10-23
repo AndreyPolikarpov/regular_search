@@ -1,6 +1,7 @@
 #include "search_tree.hpp"
 #include "storage_tnode.hpp"
 #include "tree_node.hpp"
+#include "tree_search_engine.hpp"
 
 #include "version.h"
 
