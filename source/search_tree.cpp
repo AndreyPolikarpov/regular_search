@@ -41,8 +41,6 @@ bool Searcher::PreparingAnswer(void* memory, void* memory_end, size_t size,
   return true;
 }
 
-
-
 bool Searcher::search(tnode *root,
                uint8_t *memory_area, size_t memory_size) {
 
@@ -212,7 +210,7 @@ std::string &Searcher::AnswerRegularExpresion() {
   return fr::tree::StorageSymbol::RegularExpressionMemorized(answer_special);
 }
 
-void Searcher::searchLocation(uint8_t *memory, size_t *size) {
+void Searcher::searchLocation() {
   for(;;) {
     if(search_start_.load(std::memory_order_acquire)) {
       if(search(fr::tree::StorageSymbol::isRootTree(), memory_, size_)) {
@@ -244,18 +242,8 @@ TreeSearchEngine::TreeSearchEngine(){
   for(size_t i{0}; i<count_thread_; ++i) {
     searcher_pool_.push_back(new Searcher);
     Searcher *searcher = searcher_pool_.back();
-    /*
-    thread_pool_.emplace_back([searcher, this](){
-      //this->searcher_pool_[i]->startSearch(this->memory_area_, this->memory_size_);
-      searcher->searchLocation(this->memory_area_, this->memory_size_);
-    });
-    */
     
-    thread_pool_.emplace_back(&Searcher::searchLocation, &(*searcher), 
-       this->memory_area_,  this->memory_size_);
-      //this->searcher_pool_[i]->startSearch(this->memory_area_, this->memory_size_);
-      //searcher->searchLocation(this->memory_area_, this->memory_size_);
-    //});
+    thread_pool_.emplace_back(&Searcher::searchLocation, &(*searcher));
   }
 }
 
@@ -273,11 +261,14 @@ std::tuple<void*, size_t, std::string> TreeSearchEngine::start_search(void *memo
     return std::make_tuple(nullptr, 0, isEmptyRegular());
   
   memory_area_ = static_cast<uint8_t*>(memory); memory_size_ = &size; 
-  
+  size_t retreat = size / (searcher_pool_.size() + 1);
+  size_t i{0};
   for(const auto &searcher : searcher_pool_) {
-    searcher->readLocation((uint8_t*)memory, size);
+    size_t i_retreat = i*retreat;
+    searcher->readLocation((uint8_t*)memory + i_retreat, size - i_retreat);
     searcher->clearAnswer();
     searcher->startSearch(true);
+    ++i;
   }
 
   search_works_ = true;

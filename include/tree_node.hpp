@@ -39,9 +39,9 @@ struct RepeatSpecial {
  */
 struct SpecialSymbol {
   char symbol{'/'};
-  //количество повторяющихся квантификаторов //To Do нужно уйти от магического числа 20   
+  //количество повторяющихся квантификаторов //To Do нужно уйти от магического числа g_size_repeat_special   
   std::array<RepeatSpecial, g_size_repeat_special> repeat_store;///число повторений
-  std::array <tnode*, 255> stairs;
+  std::array <tnode*, 256> stairs;
 
   SpecialSymbol() {
     stairs.fill(isEmptyTNode());
@@ -50,7 +50,6 @@ struct SpecialSymbol {
 };
 
 struct StoreSpecial {
-  //SpecialSymbol *store[g_count_special_symbol];
   std::array<SpecialSymbol *, g_count_special_symbol> store;
   StoreSpecial() {
     store.fill(isEmptySpecialSymbol());
@@ -69,7 +68,7 @@ struct tnode {
   bool is_active_special{false};
   bool end{false};
   StoreSpecial store_special;
-  std::array <tnode*, 255> stairs;
+  std::array <tnode*, 256> stairs;
 
   tnode() {
     stairs.fill(isEmptyTNode());
