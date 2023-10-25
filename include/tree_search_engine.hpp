@@ -11,6 +11,7 @@
 
 #include "tree_node.hpp"
 #include "tree_regular.hpp"
+#include "search_tree.hpp"
 
 namespace fr::tree {
 
