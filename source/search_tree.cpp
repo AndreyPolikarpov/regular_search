@@ -52,8 +52,8 @@ bool Searcher::search(tnode *root,
       if(searchInQuantifier(root, memory_area + diving, memory_area + memory_size))
         return PreparingAnswer(memory_area + diving);
     }
-    
-    tnode *current_tnode = root->stairs[*(memory_area + diving)];
+    uint8_t symbol = *(memory_area + diving);
+    tnode *current_tnode = root->stairs[/**(memory_area + diving)*/symbol];
 
     if(current_tnode == isEmptyTNode()) {
       continue;
@@ -245,6 +245,13 @@ TreeSearchEngine::TreeSearchEngine(){
     
     thread_pool_.emplace_back(&Searcher::searchLocation, &(*searcher));
   }
+  //из-за того что массивы за ранее не алоцированны сбивались ссылки в дереве
+  if(StorageSymbol::isStorageTNode().capacity() < StorageSymbol::MaxSizeStorage()) {
+    StorageSymbol::isStorageTNode().resize(StorageSymbol::MaxSizeStorage());
+    StorageSymbol::isStorageQuantifier().resize(StorageSymbol::MaxSizeStorage());
+  }
+
+  StorageSymbol::ClearAllStorage();
 }
 
 TreeSearchEngine::~TreeSearchEngine() {

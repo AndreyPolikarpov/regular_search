@@ -1,5 +1,7 @@
 #include <cstddef>
 #include <fstream>
+#include <ostream>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <cstddef>
@@ -30,10 +32,15 @@ int main(int argc, char **argv) {
   in.close();     // закрываем файл
 
   fr::tree::TreeSearchEngine tse;
-
-  for(int i{2}; i < argc; ++i) {
-    std::string temp = argv[i];
-    tse.addRegularExpression(temp);
+  try{
+    for(int i{2}; i < argc; ++i) {
+      std::string temp = argv[i];
+      tse.addRegularExpression(temp);
+    }
+  } catch(const std::invalid_argument &ia) {
+    std::cout << "Превышено число символов в 'дереве'" << std::endl;
+    std::cout << ia.what() << std::endl;
+    return 1;
   }
   tse.clearSearch();
 
@@ -44,6 +51,8 @@ int main(int argc, char **argv) {
   } else {
     std::cout << "Не нашел" << std::endl;
   }
+
+  tse.clearSearch();//обязателен
   
   return 0;
 }

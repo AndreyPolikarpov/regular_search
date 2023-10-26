@@ -32,7 +32,7 @@ private:
   tnode *root{nullptr};  
   bool addRegularElement(tnode *head, str_c_iter &it,
                   const std::string &re);
-  bool addRegularElement(SpecialSymbol *quantifier, str_c_iter &it,
+  bool addRegularElementSpec(SpecialSymbol *quantifier, str_c_iter &it,
                   const std::string &re);
   bool addSpecialSymbol(tnode *head, str_c_iter &it, 
                   const std::string &re);

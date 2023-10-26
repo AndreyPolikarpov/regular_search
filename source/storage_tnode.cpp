@@ -1,6 +1,7 @@
 #include "storage_tnode.hpp"
 #include "tree_node.hpp"
 
+#include <cstddef>
 #include <utility>
 #include <map>
 #include <vector>
@@ -8,6 +9,7 @@
 namespace fr::tree {
 
 namespace {
+  size_t MAX_SYMBOL = 4096;
   std::map<void *, std::string> storage_regular_;
   tnode root_;
   std::vector<tnode> storage_tnode_;
@@ -21,20 +23,25 @@ bool StorageSymbol::rememberRegular(void *node_end, const std::string &regular) 
   return storage_regular_.emplace(std::make_pair(node_end, regular)).second;
 }
 
-tnode &StorageSymbol::createTNode(uint8_t symbol) {
-  tnode node;
-  node.symbol = symbol;
-  storage_tnode_.emplace_back(std::move(node));
+tnode *StorageSymbol::createTNode(uint8_t symbol) {
+  if(storage_tnode_.size() < MAX_SYMBOL) {
+    tnode node;
+    node.symbol = symbol;
+    storage_tnode_.push_back(node);
+    return &storage_tnode_.back();
+  }
 
-  return storage_tnode_.back();
+  return nullptr;
 }
 
-SpecialSymbol &StorageSymbol::createSpecialSymbol(uint8_t symbol) {
-  SpecialSymbol special;
-  special.symbol = symbol;
-  storage_quantifier_.emplace_back(std::move(special));
-
-  return storage_quantifier_.back();
+SpecialSymbol *StorageSymbol::createSpecialSymbol(uint8_t symbol) {
+  if(storage_quantifier_.size() < MAX_SYMBOL) {
+    SpecialSymbol special;
+    special.symbol = symbol;
+    storage_quantifier_.emplace_back(std::move(special));
+    return &storage_quantifier_.back();
+  }
+  return nullptr;
 }
 
 void StorageSymbol::ClearAllStorage() {
@@ -54,4 +61,8 @@ std::string &StorageSymbol::RegularExpressionMemorized(void *node_end) {
 
   return isEmptyRegular();
 }
+
+size_t StorageSymbol::MaxSizeStorage() {
+  return MAX_SYMBOL;
+} 
 }

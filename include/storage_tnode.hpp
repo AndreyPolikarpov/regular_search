@@ -1,6 +1,7 @@
 #ifndef STORAGE_TNODE_H
 #define STORAGE_TNODE_H
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -22,15 +23,17 @@ public:
    * @brief Создание узла для дерева 
    * @param symbol символ обозначающий узел дерева 
    * @return созданный узел дерева
+   * @return nullptr превышено число символов
   */
-  static tnode &createTNode(uint8_t symbol);
+  static tnode *createTNode(uint8_t symbol);
   
   /**
    * @brief Создание узла для дерева 
    * @param symbol символ обозначающий узел дерева 
    * @return созданный узел дерева
+   * @return nullptr превышено число символов
   */
-  static SpecialSymbol &createSpecialSymbol(uint8_t symbol);
+  static SpecialSymbol *createSpecialSymbol(uint8_t symbol);
   
   /**
    * @brief Хранилище все узлов дерева 
@@ -58,6 +61,8 @@ public:
           пустая строка если нет ассоциации на адрес памяти
    */
   static std::string &RegularExpressionMemorized(void *node_end);
+
+  static size_t MaxSizeStorage();
 };
 
 }

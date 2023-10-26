@@ -62,35 +62,42 @@ bool TreeRegular::addRegularElement(tnode *head, str_c_iter &it, const std::stri
   
   if(!isShieldingSymbol(it, re)) {
     if(isSpecialSymbol(*(it))) {
-        addSpecialSymbol(head, it, re);
-        return true;
+        return addSpecialSymbol(head, it, re);
+      //  return true;
     }
   }
 
   if(head->stairs[static_cast<uint8_t>(*it)] == isEmptyTNode()) {
-    head->stairs[static_cast<uint8_t>(*it)] = &StorageSymbol::createTNode(*it);
+    tnode *temp = StorageSymbol::createTNode(static_cast<uint8_t>(*it));
+    if(temp == nullptr)
+      throw std::invalid_argument("add SpecialSymbol::exceeded the maximum allowed number of characters"); 
+    
+    head->stairs[static_cast<uint8_t>(*it)] = temp;
   } 
 
-  head = head->stairs[static_cast<uint8_t>(*it)];
+  tnode *node = head->stairs[static_cast<uint8_t>(*it)];
 
   if((it+1) == re.end()) {
-    head->end = true;
-    StorageSymbol::rememberRegular(head, re);
+    node->end = true;
+    StorageSymbol::rememberRegular(node, re);
     return true;
   }
 
   it += 1;
-  return addRegularElement(head, it, re);
+  return addRegularElement(node, it, re);
 }
 
-bool TreeRegular::addRegularElement(SpecialSymbol *quantifier, str_c_iter &it, const std::string &re) {
+bool TreeRegular::addRegularElementSpec(SpecialSymbol *quantifier, str_c_iter &it, const std::string &re) {
   if(quantifier == nullptr)
     throw std::invalid_argument("add SpecialSymbol:: argument head should nod nullptr ");
 
   isShieldingSymbol(it, re); 
 
   if(quantifier->stairs[static_cast<uint8_t>(*it)] == isEmptyTNode()) {
-    quantifier->stairs[static_cast<uint8_t>(*it)] = &StorageSymbol::createTNode(static_cast<uint8_t>(*it));
+    tnode *temp = StorageSymbol::createTNode(static_cast<uint8_t>(*it));
+    if(temp == nullptr)
+      throw std::invalid_argument("add SpecialSymbol::exceeded the maximum allowed number of characters"); 
+    quantifier->stairs[static_cast<uint8_t>(*it)] = temp;
   } 
     
   tnode *head = quantifier->stairs[static_cast<uint8_t>(*it)];
@@ -103,9 +110,7 @@ bool TreeRegular::addRegularElement(SpecialSymbol *quantifier, str_c_iter &it, c
 
   it += 1;
   
-  addRegularElement(head, it, re);
-
-  return false;
+  return addRegularElement(head, it, re);
 }
 
 bool TreeRegular::addSpecialSymbol(tnode *head, str_c_iter &it, const std::string &re) {
@@ -114,7 +119,11 @@ bool TreeRegular::addSpecialSymbol(tnode *head, str_c_iter &it, const std::strin
 
   if(number == -1) {
     number = 0;
-    head->store_special.store[number] = &StorageSymbol::createSpecialSymbol(static_cast<uint8_t>(*it)); 
+    SpecialSymbol* spec = StorageSymbol::createSpecialSymbol(static_cast<uint8_t>(*it)); 
+    if(spec == nullptr)
+      throw std::invalid_argument("add SpecialSymbol::exceeded the maximum allowed number of characters"); 
+
+    head->store_special.store[number] = spec;
   }
 
   quantifier = head->store_special.store[number];
@@ -157,11 +166,9 @@ bool TreeRegular::addSpecialSymbol(tnode *head, str_c_iter &it, const std::strin
       }
     }
 
-  it += repeat_spec.repeat; 
+  it += repeat_spec.repeat;  
 
-  addRegularElement(quantifier, it, re);
-
-  return false;
+  return addRegularElementSpec(quantifier, it, re);;
 }
 
 bool TreeRegular::addRegularExpresion(const std::string &regular_expresion) {

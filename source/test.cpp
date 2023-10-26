@@ -450,6 +450,7 @@ TEST(TreeSearchEngine, Simpl) {
       }
   }
   in.close();     // закрываем файл
+  fr::tree::StorageSymbol::ClearAllStorage();
 
   EXPECT_FALSE(poem.empty());
   fr::tree::TreeSearchEngine tse;
