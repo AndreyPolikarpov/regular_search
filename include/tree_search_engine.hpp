@@ -33,6 +33,11 @@ private:
 public:
   TreeSearchEngine();
   ~TreeSearchEngine();
+
+  TreeSearchEngine(const TreeSearchEngine &) = delete;
+  TreeSearchEngine(TreeSearchEngine &&) = delete;
+  TreeSearchEngine &operator=(const TreeSearchEngine &) = delete;
+  TreeSearchEngine &operator=(TreeSearchEngine &&) = delete;
   /**
    * @brief Добавить регулярное выражение 
    * если работает поиск, регулярное выражение не будет добавлено
@@ -58,7 +63,7 @@ public:
   std::tuple<void*, size_t, std::string> start_search(void *memory, size_t size);
 
   bool isWorkSearch() {return search_works_;};
-  ///чистка поля ответов, атомиков. Необходимо осуществлять перед началом нового поиска
+  ///чистка поля ответов, атомиков. Необходимо осуществлять перед началом или после поиска
   void clearSearch();
   ///остановить работу потоков //To Do перенести в private
   void stopJobs();
