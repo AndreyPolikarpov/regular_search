@@ -332,4 +332,8 @@ void TreeSearchEngine::stopJobs() {
   }
   search_works_ = false;
 }
+
+void TreeSearchEngine::clearTree() {
+  StorageSymbol::ClearAllStorage();
+ }
 }

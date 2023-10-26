@@ -44,6 +44,7 @@ public:
    * @param regular регулярное выражение
    * @return true добавлено
    * @return false не добавлено
+   * @exception std::invalid_argument превышено максимальное число символов(узлов дерева)
    */
   bool addRegularExpression(const std::string &regular);
   ///остановить поиск
@@ -67,6 +68,8 @@ public:
   void clearSearch();
   ///остановить работу потоков //To Do перенести в private
   void stopJobs();
+  ///Удалить все регулярные выражения. Вызывать только при остановленном поиске
+  void clearTree();
 };
 }
 
